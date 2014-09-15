@@ -34,9 +34,12 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="MessageFlasher.cs" />
-    <Compile Include="MessageShower.cs" />
-    <Compile Include="DHTMLXSharp.cs" />
+    <Compile Include="DHTMLXLayout.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <None Include="MessageFlasher.cs" />
+    <None Include="MessageShower.cs" />
+    <Compile Include="main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
