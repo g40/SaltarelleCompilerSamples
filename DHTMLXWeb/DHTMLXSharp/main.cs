@@ -19,10 +19,14 @@ namespace DHTMLXSharp
 {
 public class main
 {	
+	//
+	DHTMLXWindowFactory wf = null;
+
 	/// <summary>
 	/// 
 	/// </summary>
-	private DHTMLXForm form = null;
+	// private DHTMLXForm form = null;
+	DHTMLXWindow win = null;
 
 	/// <summary>
 	/// prototype for an AJAX Success handler (avoiding use of lambdas)
@@ -34,28 +38,6 @@ public class main
 		string s = data.ToString();
 	}
 
-	/// <summary>
-	/// This certainly gets events correctly but it would be nice to be passed
-	/// the form instance in the callback ...
-	/// </summary>
-	/// <param name="btnName"></param>
-	private void FormButtonClicked(String btnName)
-	{
-		if (btnName == "save")
-		{
-			String s = null;
-			object obj = form.getFormData();
-			if (obj != null)
-			{
-				s = obj.ToString();
-			}
-		}
-		if (form != null)
-		{
-			form.Hide();
-		}
-	}
-	
 	/// <summary>
 	/// Menu click handler
 	/// </summary>
@@ -99,11 +81,12 @@ public class main
 		}
 		else
 		{
-			DHTMLXWindow win = new DHTMLXWindow(wf, id, 100, 100, 320, 200);
-			win.OnClick += OnButtonClick;
+			if (win == null)
+			{
+			}
 			win.SetText(id);
-			form = win.attachForm(NativeCode.getLayout("formLayout"));
-			form.OnClick += FormButtonClicked;
+//			form = win.attachForm();
+//			form.OnClick += FormButtonClicked;
 		}
 	}
 
@@ -127,10 +110,6 @@ public class main
 	DHTMLXMenu main_menu = null;
 	//
 	DHTMLXTreeGrid tree_grid = null;
-	/// <summary>
-	/// Window factory
-	/// </summary>
-	DHTMLXWindowFactory wf = null;
 	//
 	/// <summary>
 	/// layout definition stored as a JSON object
@@ -148,6 +127,16 @@ public class main
 	{
 
 	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="btnName"></param>
+	private void OnFormButtonClick(object sender,object arg)
+	{
+		Window.Alert(" OnFormButtonClick " + sender.ToString());
+	}
+
 	/// <summary>
 	/// Called when document is loaded
 	/// </summary>
@@ -181,7 +170,10 @@ public class main
 		if (main_menu != null)
 		{
 
-//			main_menu.Load("data/menu.xml");
+			main_menu.AddMenu(null, "Form", "Form", false);
+			main_menu.AddMenuItem("Form", 0, "Form_Show", "Show Form...", false);
+			main_menu.AddMenuItem("Form", 1, "Form_Hide", "Hide Form...", false);
+			//			main_menu.Load("data/menu.xml");
 			// menus get built in reverse. imagine push_back ...
 			main_menu.AddMenu(null, "Server", "Server", false);
 			main_menu.AddMenuItem("Server", 0, "Server_Ajax", "Make AJAX call...", false);
@@ -196,8 +188,29 @@ public class main
 			main_menu.OnClick += OnMenuClick;
 		}
 
-		// create the Window factory
+		//
 		wf = new DHTMLXWindowFactory();
+		// create the Window factory
+		//win = wf.Create("Window",60,60,640,480);
+		win = new DHTMLXWindow(wf,"Window",60,60,640,480);
+		//
+		object flayout = NativeCode.getLayout("formLayout");
+		// object instance = win.CreateForm(layout);
+		//
+		DHTMLXForm form = new DHTMLXForm(win,flayout);
+		//
+		String s = form.getFormData();
+		//
+		form.OnButtonClick += OnFormButtonClick;
+		//form.OnButtonClick += win.FormButtonHandler;
+		//
+		Test t = new Test("Just testing");
+		//
+		if (t != null)
+		{
+			Window.Alert(t.Value());
+		}
+
 		//
 		// jQuery.Ajax()
 		jQueryAjaxOptions opts = new jQueryAjaxOptions { Url = "http://localhost:8888/data/form1.json", DataType = "json", Async = true };

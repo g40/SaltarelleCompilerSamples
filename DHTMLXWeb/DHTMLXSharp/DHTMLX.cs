@@ -36,6 +36,9 @@ namespace DHTMLXSharp
 		public delegate void EventHandlerType(String id,String zoneId,object caState);
 	}
 
+	/// <summary>
+	/// 
+	/// </summary>
 	class DHTMLXCell
 	{
 		/// <summary>
@@ -53,6 +56,9 @@ namespace DHTMLXSharp
 
 	}
 
+	/// <summary>
+	/// 
+	/// </summary>
 	class DHTMLXLayoutObject
 	{
 		/// <summary>
@@ -76,51 +82,50 @@ namespace DHTMLXSharp
 		public DHTMLXCell Cells(string id) { return null; }
 	}
 
+	/// <summary>
+	/// 
+	/// </summary>
 	class DHTMLXToolbar
 	{
 
 	}
 
-	class DHTMLXWindowFactory
-	{
-		/// <summary>
-		/// We need a singleton here
-		/// </summary>
-		[InlineCode("new dhtmlXWindows()")]
-		public DHTMLXWindowFactory () { }
-	}
-
+	/// <summary>
+	/// 
+	/// </summary>
 	class DHTMLXForm
 	{
 		/// <summary>
-		/// 
+		/// internal instance
 		/// </summary>
-		[InlineCode("{window}.attachForm({layout})")]
-		public DHTMLXForm(DHTMLXWindow window, object layout) { }
+		private DHTMLXWindow _parent = null;
 
 		/// <summary>
-		/// 
+		/// We can only create a Form if we have a Window
+		/// in which it lives ...
 		/// </summary>
-		/// <returns></returns>
+		/// <param name="parent"></param>
+		/// <param name="layout"></param>
+		[InlineCode("{parent}.attachForm({layout})")]
+		public DHTMLXForm(DHTMLXWindow parent,object layout)
+		{
+			_parent = parent;
+		}
+		//
 		[InlineCode("{this}.getFormData()")]
-		public object getFormData() {  return null; }
-
-		/// <summary>
-		/// This removes the form from the Window 
-		/// </summary>
-		[InlineCode("{this}.unload()")]
-		public void Hide() { }
+		public String getFormData() {  return null; }
 
 		/// <summary>
 		/// 
 		/// </summary>
 		/// <param name="btnName"></param>
-		public delegate void EventHandlerType(String btnName);
+		//public delegate void EventHandlerType(String btnName);
+		public delegate void EventHandlerType(object obj,object arg);
 
 		/// <summary>
-		/// OnClick += Function with EventHandlerType signature
+		/// 
 		/// </summary>
-		public event EventHandlerType OnClick
+		public event EventHandlerType OnButtonClick
 		{
 			[InlineCode("{this}.attachEvent('onButtonClick',{value})")]
 			add { }
@@ -128,34 +133,46 @@ namespace DHTMLXSharp
 		}
 	}
 
+	/// <summary>
+	/// 
+	/// </summary>
 	class DHTMLXWindow
 	{
 		/// <summary>
-		/// Create a new window from the factory instance
+		/// Much better. Uses strongly typed parent
 		/// </summary>
-		/// <param name="wf"></param>
+		/// <param name="parent"></param>
 		/// <param name="id"></param>
 		/// <param name="x"></param>
 		/// <param name="y"></param>
 		/// <param name="width"></param>
 		/// <param name="height"></param>
-		[InlineCode("{wf}.createWindow({id},{x},{y},{width},{height})")]
-		public DHTMLXWindow(DHTMLXWindowFactory wf,string id, int x, int y, int width, int height) { }
+		[InlineCode("{parent}.createWindow({id},{x},{y},{width},{height})")]
+		public DHTMLXWindow(DHTMLXWindowFactory parent, string id, int x, int y, int width, int height) { }
 
+		/// <summary>
+		/// Set the window text
+		/// </summary>
+		/// <param name="text"></param>
 		[InlineCode("{this}.setText({text})")]
 		public void SetText(string text) { }
 
 		/// <summary>
-		/// Attaches a form 
+		/// Show the window
 		/// </summary>
-		/// <param name="Layout"></param>
-		[InlineCode("{this}.attachForm({layout})")]
-		public DHTMLXForm attachForm(object layout) { return null; }
+		[InlineCode("{this}.show()")]
+		public void Show() { }
+
+		/// <summary>
+		/// Hide the window
+		/// </summary>
+		[InlineCode("{this}.hide()")]
+		public void Hide() { }
 
 		/// <summary>
 		/// typedef an event handler
 		/// </summary>
-		public delegate void EventHandlerType(object window,object cell);
+		public delegate void EventHandlerType(object window, object cell);
 
 		/// <summary>
 		/// OnClick += Function with EventHandlerType signature
@@ -166,8 +183,36 @@ namespace DHTMLXSharp
 			add { }
 			remove { }
 		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="btnName"></param>
+		public void FormButtonHandler(object sender,object arg)
+		{
+			int i = 0;
+			Hide();
+		}
 	}
 
+	/// <summary>
+	/// 
+	/// </summary>
+	class DHTMLXWindowFactory
+	{
+		/// <summary>
+		/// We need a singleton here
+		/// </summary>
+		[InlineCode("new dhtmlXWindows()")]
+		public DHTMLXWindowFactory () { }
+
+		[InlineCode("{this}.createWindow({id},{x},{y},{width},{height})")]
+		public DHTMLXWindow Create(string id, int x, int y, int width, int height) { return null; }
+	}
+
+	/// <summary>
+	/// Menus
+	/// </summary>
 	class DHTMLXMenu
 	{
 		/// <summary>
@@ -262,5 +307,23 @@ namespace DHTMLXSharp
 
 		[InlineCode("Mapper[{layout_name}]")]
 		static public object getLayout(String layout_name) { return null; }
+	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	class Test
+	{
+		private String _s = null;
+
+		public Test(String s)
+		{
+			_s = s;
+		}
+
+		public String Value()
+		{
+			return _s;
+		}
 	}
 }

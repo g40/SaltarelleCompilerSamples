@@ -43,6 +43,7 @@
     <Content Include="scripts\DHTMLXSharp.js" />
     <None Include="Properties\PublishProfiles\NovaDSP.pubxml" />
     <None Include="scripts\jquery-1.9.1.intellisense.js" />
+    <Content Include="scripts\formLayout.js" />
     <Content Include="scripts\init.js" />
     <Content Include="scripts\jquery-1.9.1.js" />
     <Content Include="scripts\jquery.json.js" />

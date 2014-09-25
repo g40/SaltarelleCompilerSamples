@@ -8,7 +8,7 @@
 	var $DHTMLXSharp_$DHTMLXForm = function() {
 	};
 	$DHTMLXSharp_$DHTMLXForm.prototype = {
-		remove_$onClick: function(value) {
+		remove_$onButtonClick: function(value) {
 		}
 	};
 	////////////////////////////////////////////////////////////////////////////////
@@ -40,6 +40,10 @@
 	};
 	$DHTMLXSharp_$DHTMLXWindow.prototype = {
 		remove_$onClick: function(value) {
+		},
+		$formButtonHandler: function(sender, arg) {
+			var i = 0;
+			this.hide();
 		}
 	};
 	////////////////////////////////////////////////////////////////////////////////
@@ -54,30 +58,29 @@
 	var $DHTMLXSharp_$NativeCode = function() {
 	};
 	////////////////////////////////////////////////////////////////////////////////
+	// DHTMLXSharp.Test
+	var $DHTMLXSharp_$Test = function(s) {
+		this.$_s = null;
+		this.$_s = s;
+	};
+	$DHTMLXSharp_$Test.prototype = {
+		$value: function() {
+			return this.$_s;
+		}
+	};
+	////////////////////////////////////////////////////////////////////////////////
 	// DHTMLXSharp.main
 	var $DHTMLXSharp_main = function() {
-		this.$form = null;
+		this.$wf = null;
+		this.$win = null;
 		this.$layout = null;
 		this.$main_menu = null;
 		this.$tree_grid = null;
-		this.$wf = null;
 		this.$json_layout = null;
 	};
 	$DHTMLXSharp_main.prototype = {
 		onJSONSuccess: function(data, textStatus, request) {
 			var s = data.toString();
-		},
-		$formButtonClicked: function(btnName) {
-			if (btnName === 'save') {
-				var s = null;
-				var obj = this.$form.getFormData();
-				if (ss.isValue(obj)) {
-					s = obj.toString();
-				}
-			}
-			if (ss.isValue(this.$form)) {
-				this.$form.unload();
-			}
 		},
 		$onMenuClick: function(id, zoneId, caState) {
 			var s;
@@ -103,17 +106,20 @@
 				var req = $.ajax(opts);
 			}
 			else {
-				var win = this.$wf.createWindow(id, 100, 100, 320, 200);
-				win.attachEvent('onClick', ss.mkdel(this, this.$onButtonClick));
-				win.setText(id);
-				this.$form = win.attachForm(Mapper['formLayout']);
-				this.$form.attachEvent('onButtonClick', ss.mkdel(this, this.$formButtonClicked));
+				if (ss.isNullOrUndefined(this.$win)) {
+				}
+				this.$win.setText(id);
+				//			form = win.attachForm();
+				//			form.OnClick += FormButtonClicked;
 			}
 		},
 		$onButtonClick: function(window, cell) {
 			window.alert('OnButtonClick');
 		},
 		onAjaxCallback: function(data) {
+		},
+		$onFormButtonClick: function(sender, arg) {
+			window.alert(' OnFormButtonClick ' + sender.toString());
 		},
 		$attach: function() {
 			//
@@ -141,6 +147,9 @@
 			this.$main_menu = cell.attachMenu();
 			//
 			if (ss.isValue(this.$main_menu)) {
+				this.$main_menu.addNewSibling(null, 'Form', 'Form', false);
+				this.$main_menu.addNewChild('Form', 0, 'Form_Show', 'Show Form...', false);
+				this.$main_menu.addNewChild('Form', 1, 'Form_Hide', 'Hide Form...', false);
 				//			main_menu.Load("data/menu.xml");
 				// menus get built in reverse. imagine push_back ...
 				this.$main_menu.addNewSibling(null, 'Server', 'Server', false);
@@ -153,8 +162,27 @@
 				this.$main_menu.addNewSeparator('new');
 				this.$main_menu.attachEvent('onClick', ss.mkdel(this, this.$onMenuClick));
 			}
-			// create the Window factory
+			//
 			this.$wf = new dhtmlXWindows();
+			// create the Window factory
+			//win = wf.Create("Window",60,60,640,480);
+			this.$win = this.$wf.createWindow('Window', 60, 60, 640, 480);
+			//
+			var flayout = Mapper['formLayout'];
+			// object instance = win.CreateForm(layout);
+			//
+			var form = this.$win.attachForm(flayout);
+			//
+			var s = form.getFormData();
+			//
+			form.attachEvent('onButtonClick', ss.mkdel(this, this.$onFormButtonClick));
+			//form.OnButtonClick += win.FormButtonHandler;
+			//
+			var t = new $DHTMLXSharp_$Test('Just testing');
+			//
+			if (ss.isValue(t)) {
+				window.alert(t.$value());
+			}
 			//
 			// jQuery.Ajax()
 			var opts = { url: 'http://localhost:8888/data/form1.json', dataType: 'json', async: true };
@@ -192,6 +220,7 @@
 	ss.registerClass(null, 'DHTMLXSharp.$DHTMLXWindow', $DHTMLXSharp_$DHTMLXWindow);
 	ss.registerClass(null, 'DHTMLXSharp.$DHTMLXWindowFactory', $DHTMLXSharp_$DHTMLXWindowFactory);
 	ss.registerClass(null, 'DHTMLXSharp.$NativeCode', $DHTMLXSharp_$NativeCode);
+	ss.registerClass(null, 'DHTMLXSharp.$Test', $DHTMLXSharp_$Test);
 	ss.registerClass(global, 'DHTMLXSharp.main', $DHTMLXSharp_main);
 	ss.registerClass(global, 'DHTMLXSharp.main$JSONThing', $DHTMLXSharp_main$JSONThing);
 	$DHTMLXSharp_main.$main();
