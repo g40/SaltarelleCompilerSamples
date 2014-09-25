@@ -1,4 +1,12 @@
-﻿using System;
+﻿/*
+
+ 
+ 
+  
+ */
+
+
+using System;
 using System.Html;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +18,44 @@ using System.Runtime.CompilerServices;
 namespace DHTMLXSharp
 {
 public class main
-{
+{	
+	/// <summary>
+	/// 
+	/// </summary>
+	private DHTMLXForm form = null;
+
+	/// <summary>
+	/// prototype for an AJAX Success handler (avoiding use of lambdas)
+	/// </summary>
+	/// <param name="callback"></param>
+	/// <returns></returns>
+	public void OnJSONSuccess(object data, string textStatus, jQueryXmlHttpRequest request)
+	{
+		string s = data.ToString();
+	}
+
+	/// <summary>
+	/// This certainly gets events correctly but it would be nice to be passed
+	/// the form instance in the callback ...
+	/// </summary>
+	/// <param name="btnName"></param>
+	private void FormButtonClicked(String btnName)
+	{
+		if (btnName == "save")
+		{
+			String s = null;
+			object obj = form.getFormData();
+			if (obj != null)
+			{
+				s = obj.ToString();
+			}
+		}
+		if (form != null)
+		{
+			form.Hide();
+		}
+	}
+	
 	/// <summary>
 	/// Menu click handler
 	/// </summary>
@@ -41,25 +86,24 @@ public class main
 		else if (id == "Server_Ajax")
 		{
 			// set up the AJAX options
-			jQueryAjaxOptions opts = new jQueryAjaxOptions { Url = "http://localhost:8888/ajax1", DataType = "json", Async = true };
+			//jQueryAjaxOptions opts = new jQueryAjaxOptio
+			jQueryAjaxOptions opts = new jQueryAjaxOptions 
+			{ 
+				Url = "http://localhost:8888/data/form1.json", 
+				DataType = "json", 
+				Async = true, 
+				Success = OnJSONSuccess
+			};
 			// make the request
 			var req = jQuery.Ajax(opts);
-			// on success ...
-			req.Success(data =>
-			{
-				// this should cast OK
-				JSONThing js = (JSONThing)data;
-				if (js != null)
-				{
-					Window.Alert(js.FName + " " + js.LName);
-				}
-			});
 		}
 		else
 		{
 			DHTMLXWindow win = new DHTMLXWindow(wf, id, 100, 100, 320, 200);
 			win.OnClick += OnButtonClick;
 			win.SetText(id);
+			form = win.attachForm(NativeCode.getLayout("formLayout"));
+			form.OnClick += FormButtonClicked;
 		}
 	}
 
@@ -87,7 +131,14 @@ public class main
 	/// Window factory
 	/// </summary>
 	DHTMLXWindowFactory wf = null;
+	//
+	/// <summary>
+	/// layout definition stored as a JSON object
+	/// we retrieve at startup ...
+	/// </summary>
+	object json_layout = null;
 
+	///
 	private void OnButtonClick(object window, object cell)
 	{
 		Window.Alert("OnButtonClick");
@@ -149,6 +200,14 @@ public class main
 		wf = new DHTMLXWindowFactory();
 		//
 		// jQuery.Ajax()
+		jQueryAjaxOptions opts = new jQueryAjaxOptions { Url = "http://localhost:8888/data/form1.json", DataType = "json", Async = true };
+		// make the request
+		var req = jQuery.Ajax(opts);
+		// on success ...
+		req.Success(data => 
+		{
+			json_layout = data;
+		});
 	}
 
 	/// <summary>

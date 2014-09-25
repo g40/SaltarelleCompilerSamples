@@ -4,6 +4,14 @@
 	var $DHTMLXSharp_$DHTMLXCell = function() {
 	};
 	////////////////////////////////////////////////////////////////////////////////
+	// DHTMLXSharp.DHTMLXForm
+	var $DHTMLXSharp_$DHTMLXForm = function() {
+	};
+	$DHTMLXSharp_$DHTMLXForm.prototype = {
+		remove_$onClick: function(value) {
+		}
+	};
+	////////////////////////////////////////////////////////////////////////////////
 	// DHTMLXSharp.DHTMLXLayoutObject
 	var $DHTMLXSharp_$DHTMLXLayoutObject = function() {
 	};
@@ -48,12 +56,29 @@
 	////////////////////////////////////////////////////////////////////////////////
 	// DHTMLXSharp.main
 	var $DHTMLXSharp_main = function() {
+		this.$form = null;
 		this.$layout = null;
 		this.$main_menu = null;
 		this.$tree_grid = null;
 		this.$wf = null;
+		this.$json_layout = null;
 	};
 	$DHTMLXSharp_main.prototype = {
+		onJSONSuccess: function(data, textStatus, request) {
+			var s = data.toString();
+		},
+		$formButtonClicked: function(btnName) {
+			if (btnName === 'save') {
+				var s = null;
+				var obj = this.$form.getFormData();
+				if (ss.isValue(obj)) {
+					s = obj.toString();
+				}
+			}
+			if (ss.isValue(this.$form)) {
+				this.$form.unload();
+			}
+		},
 		$onMenuClick: function(id, zoneId, caState) {
 			var s;
 			if (id === 'Server_JSON') {
@@ -72,22 +97,17 @@
 			}
 			else if (id === 'Server_Ajax') {
 				// set up the AJAX options
-				var opts = { url: 'http://localhost:8888/ajax1', dataType: 'json', async: true };
+				//jQueryAjaxOptions opts = new jQueryAjaxOptio
+				var opts = { url: 'http://localhost:8888/data/form1.json', dataType: 'json', async: true, success: ss.mkdel(this, this.onJSONSuccess) };
 				// make the request
 				var req = $.ajax(opts);
-				// on success ...
-				req.success(function(data) {
-					// this should cast OK
-					var js1 = data;
-					if (ss.isValue(js1)) {
-						window.alert(js1.FName + ' ' + js1.LName);
-					}
-				});
 			}
 			else {
 				var win = this.$wf.createWindow(id, 100, 100, 320, 200);
 				win.attachEvent('onClick', ss.mkdel(this, this.$onButtonClick));
 				win.setText(id);
+				this.$form = win.attachForm(Mapper['formLayout']);
+				this.$form.attachEvent('onButtonClick', ss.mkdel(this, this.$formButtonClicked));
 			}
 		},
 		$onButtonClick: function(window, cell) {
@@ -137,6 +157,13 @@
 			this.$wf = new dhtmlXWindows();
 			//
 			// jQuery.Ajax()
+			var opts = { url: 'http://localhost:8888/data/form1.json', dataType: 'json', async: true };
+			// make the request
+			var req = $.ajax(opts);
+			// on success ...
+			req.success(ss.mkdel(this, function(data) {
+				this.$json_layout = data;
+			}));
 		}
 	};
 	$DHTMLXSharp_main.$main = function() {
@@ -157,6 +184,7 @@
 		return $this;
 	};
 	ss.registerClass(null, 'DHTMLXSharp.$DHTMLXCell', $DHTMLXSharp_$DHTMLXCell);
+	ss.registerClass(null, 'DHTMLXSharp.$DHTMLXForm', $DHTMLXSharp_$DHTMLXForm);
 	ss.registerClass(null, 'DHTMLXSharp.$DHTMLXLayoutObject', $DHTMLXSharp_$DHTMLXLayoutObject);
 	ss.registerClass(null, 'DHTMLXSharp.$DHTMLXMenu', $DHTMLXSharp_$DHTMLXMenu);
 	ss.registerClass(null, 'DHTMLXSharp.$DHTMLXToolbar', $DHTMLXSharp_$DHTMLXToolbar);

@@ -34,7 +34,7 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="DHTMLXLayout.cs">
+    <Compile Include="DHTMLX.cs">
       <SubType>Code</SubType>
     </Compile>
     <None Include="MessageFlasher.cs" />
