@@ -91,53 +91,46 @@ namespace DHTMLXSharp
 	}
 
 	/// <summary>
-	/// 
-	/// </summary>
-	class DHTMLXForm
-	{
-		/// <summary>
-		/// internal instance
-		/// </summary>
-		private DHTMLXWindow _parent = null;
-
-		/// <summary>
-		/// We can only create a Form if we have a Window
-		/// in which it lives ...
-		/// </summary>
-		/// <param name="parent"></param>
-		/// <param name="layout"></param>
-		[InlineCode("{parent}.attachForm({layout})")]
-		public DHTMLXForm(DHTMLXWindow parent,object layout)
-		{
-			_parent = parent;
-		}
-		//
-		[InlineCode("{this}.getFormData()")]
-		public String getFormData() {  return null; }
-
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="btnName"></param>
-		//public delegate void EventHandlerType(String btnName);
-		public delegate void EventHandlerType(object obj,object arg);
-
-		/// <summary>
-		/// 
-		/// </summary>
-		public event EventHandlerType OnButtonClick
-		{
-			[InlineCode("{this}.attachEvent('onButtonClick',{value})")]
-			add { }
-			remove { }
-		}
-	}
-
-	/// <summary>
-	/// 
+	/// Wrap both pop-up Window and associated Form into a single class
+	/// we can show/hide, operate modally and attach external event
+	/// // handlers
 	/// </summary>
 	class DHTMLXWindow
 	{
+		// the enclosing Window (frame)
+		private object _window = null;
+		// the internal form object contains controls + data
+		private object _form = null;
+
+		/// <summary>
+		/// Get the form data
+		/// </summary>
+		/// <returns></returns>
+		[InlineCode("{this}.$_form.getFormData()")]
+		String getFormData() { return null; }
+
+		/// <summary>
+		/// create a new window
+		/// </summary>
+		/// <param name="parent"></param>
+		/// <param name="id"></param>
+		/// <param name="x"></param>
+		/// <param name="y"></param>
+		/// <param name="width"></param>
+		/// <param name="height"></param>
+		/// <returns></returns>
+		[InlineCode("{parent}.createWindow({id},{x},{y},{width},{height})")]
+		object Attach(DHTMLXWindowFactory parent, string id, int x, int y, int width, int height) {  return null; }
+
+		/// <summary>
+		/// attach a new form
+		/// </summary>
+		/// <param name="_window"></param>
+		/// <param name="layout"></param>
+		/// <returns></returns>
+		[InlineCode("{_window}.attachForm({layout})")]
+		object Attach(object _window, object layout) { return null; }
+		
 		/// <summary>
 		/// Much better. Uses strongly typed parent
 		/// </summary>
@@ -147,39 +140,119 @@ namespace DHTMLXSharp
 		/// <param name="y"></param>
 		/// <param name="width"></param>
 		/// <param name="height"></param>
-		[InlineCode("{parent}.createWindow({id},{x},{y},{width},{height})")]
-		public DHTMLXWindow(DHTMLXWindowFactory parent, string id, int x, int y, int width, int height) { }
+		public DHTMLXWindow(DHTMLXWindowFactory parent, string id, int x, int y, int width, int height, object layout)
+		{
+			_window = Attach(parent,id,x,y,width,height);
+			if (layout != null)
+			{
+				_form = Attach(_window, layout);
+				_FormClickHandler += _OnInternalClick;
+			}
+		}
+
+
+		/// <summary>
+		/// Get the forms data
+		/// </summary>
+		/// <returns></returns>
+		public String GetData() { return getFormData(); }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="btnName"></param>
+		delegate void _FormEventHandler(string btnName);
+
+		event _FormEventHandler _FormClickHandler
+		{
+			[InlineCode("{this}.$_form.attachEvent('onButtonClick',{value})")]
+			add { }
+			remove { }
+		}
 
 		/// <summary>
 		/// Set the window text
 		/// </summary>
 		/// <param name="text"></param>
-		[InlineCode("{this}.setText({text})")]
-		public void SetText(string text) { }
+		[InlineCode("{this}.$_window.setText({text})")]
+		void _SetText(string text) { }
 
 		/// <summary>
 		/// Show the window
 		/// </summary>
-		[InlineCode("{this}.show()")]
-		public void Show() { }
+		[InlineCode("{this}.$_window.show()")]
+		void _Show() { }
 
 		/// <summary>
 		/// Hide the window
 		/// </summary>
-		[InlineCode("{this}.hide()")]
-		public void Hide() { }
+		[InlineCode("{this}.$_window.hide()")]
+		void _Hide() { }
+
+		[InlineCode("{this}.$_window.setModal({state})")]
+		void _Modal(bool state) { }
+
+		/// <summary>
+		/// Set the Window's caption
+		/// </summary>
+		public String Text
+		{
+			set
+			{
+				if (_window != null)
+				{
+					_SetText(value);
+				}
+			}
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		public bool Visible
+		{
+			set
+			{
+				if (_window != null)
+				{
+					if (value == true)
+					{
+						_Show();
+					}
+					else
+					{
+						_Hide();
+						_Modal(false);
+					}
+				}
+			}
+		}
+
+		/// <summary>
+		/// true = modal, false = not
+		/// </summary>
+		public bool Modal
+		{
+			set
+			{
+				if (_window != null)
+				{
+					_Modal(value);
+				}
+			}
+		}
 
 		/// <summary>
 		/// typedef an event handler
 		/// </summary>
-		public delegate void EventHandlerType(object window, object cell);
+		delegate void _WindowHandlerType(object window, object cell);
 
 		/// <summary>
 		/// OnClick += Function with EventHandlerType signature
 		/// </summary>
-		public event EventHandlerType OnClick
+		event _WindowHandlerType _OnClick
 		{
-			[InlineCode("{this}.attachEvent('onClick',{value})")]
+			[InlineCode("{this}.$_window.attachEvent('onClick',{value})")]
 			add { }
 			remove { }
 		}
@@ -187,27 +260,73 @@ namespace DHTMLXSharp
 		/// <summary>
 		/// 
 		/// </summary>
+		/// <param name="window"></param>
+		/// <param name="name"></param>
+		public delegate void ExternalHandlerType(DHTMLXWindow window,string name);
+
+		/// <summary>
+		/// Interested 3rd parties will be notified of button clicks in the form
+		/// if they add an event handler to OnClick
+		/// </summary>
+		public event ExternalHandlerType OnClick;
+
+		/// <summary>
+		/// 
+		/// </summary>
 		/// <param name="btnName"></param>
-		public void FormButtonHandler(object sender,object arg)
+		//public 
+		void _OnInternalClick(string arg)
 		{
-			int i = 0;
-			Hide();
+			// forward to external delegate
+			if (OnClick != null)
+			{
+				// this means we know which Window instance and which button
+				OnClick(this, arg);
+			}
 		}
 	}
 
 	/// <summary>
-	/// 
+	/// Window factory. Need to reference the factory in order to be able 
+	/// to create Windows ...
 	/// </summary>
 	class DHTMLXWindowFactory
 	{
 		/// <summary>
-		/// We need a singleton here
+		/// singleton instance. Note that _factory will sctually resolve to a JS object instance
+		/// </summary>
+ 		static private DHTMLXWindowFactory _factory = null;
+
+		/// <summary>
+		/// This is the internal in-line code
 		/// </summary>
 		[InlineCode("new dhtmlXWindows()")]
-		public DHTMLXWindowFactory () { }
+		private static DHTMLXWindowFactory _Attach() { return null; }
 
-		[InlineCode("{this}.createWindow({id},{x},{y},{width},{height})")]
-		public DHTMLXWindow Create(string id, int x, int y, int width, int height) { return null; }
+		/// <summary>
+		/// Attach to the singleton instance
+		/// </summary>
+		/// <returns></returns>
+		static DHTMLXWindowFactory Attach()
+		{
+			if (_factory == null)
+			{
+				_factory = _Attach();
+			}
+			return _factory;
+		}
+
+		/// <summary>
+		/// Returns the singleton Window Factory instance
+		/// So to use this we do DHTMLXWindowFactory.Instance
+		/// </summary>
+		public static DHTMLXWindowFactory Instance
+		{
+			get
+			{
+				return Attach();
+			}
+		}
 	}
 
 	/// <summary>

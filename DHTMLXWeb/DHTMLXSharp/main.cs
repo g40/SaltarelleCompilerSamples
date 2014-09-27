@@ -36,8 +36,53 @@ public class main
 	public void OnJSONSuccess(object data, string textStatus, jQueryXmlHttpRequest request)
 	{
 		string s = data.ToString();
+		Window.Alert(s);
+
 	}
 
+	public void OnJSONError(jQueryXmlHttpRequest request, string textStatus, Exception error)
+	{
+		string s = textStatus.ToString();
+		Window.Alert(s);
+
+	}
+
+	public void SendJSONviaAJAX(object data)
+	{
+		JsDictionary<String, object> mapper = new JsDictionary<String, object>();
+		mapper["key"] = data;
+
+		jQueryAjaxOptions opts = new jQueryAjaxOptions
+		{
+			Url = "http://localhost:8888/ajax",
+			Type = "POST",
+			DataType = "json",
+			Async = true,
+			Success = OnJSONSuccess,
+			Error = OnJSONError
+		};
+		opts.Data = mapper;
+		//
+		//((dynamic)opts).Data = mapper.ToString();
+		// make the request
+		var req = jQuery.Ajax(opts);
+
+	}
+	/// <summary>
+	/// Handler for Window/Form button clicks
+	/// </summary>
+	/// <param name="window"></param>
+	/// <param name="name"></param>
+	private void OnButtonClicked(DHTMLXWindow window, string name)
+	{
+		if (name == "save")
+		{
+//			string s = ;
+			SendJSONviaAJAX(window.GetData());
+		}
+		window.Visible = false;
+	}
+	
 	/// <summary>
 	/// Menu click handler
 	/// </summary>
@@ -69,24 +114,48 @@ public class main
 		{
 			// set up the AJAX options
 			//jQueryAjaxOptions opts = new jQueryAjaxOptio
+			JSONThing js = new JSONThing();
+			js.FName = "Hello";
+			js.LName = "World";
+			JsDictionary<String, object> mapper = new JsDictionary<String, object>();
+			mapper["key"] = js;
+
 			jQueryAjaxOptions opts = new jQueryAjaxOptions 
 			{ 
-				Url = "http://localhost:8888/data/form1.json", 
+				Url = "http://localhost:8888/ajax", 
 				DataType = "json", 
 				Async = true, 
-				Success = OnJSONSuccess
+				Success = OnJSONSuccess,
+				Error = OnJSONError
 			};
+			opts.Data = mapper;
+			//
+			object[] a =  { js };
+			//
+			opts.Data = a;
+			//
+			opts.Type = "POST";
+			//
+			//((dynamic)opts).Data = mapper.ToString();
 			// make the request
 			var req = jQuery.Ajax(opts);
 		}
-		else
+		else if (id == "Form_Show")
 		{
-			if (win == null)
+			if (win != null)
 			{
+				//win.Text = id;
+				win.Visible = true;
 			}
-			win.SetText(id);
-//			form = win.attachForm();
-//			form.OnClick += FormButtonClicked;
+		}
+		else if (id == "Form_Show_Modal")
+		{
+			if (win != null)
+			{
+				//win.Text = id;
+				win.Visible = true;
+				win.Modal = true;
+			}
 		}
 	}
 
@@ -116,6 +185,7 @@ public class main
 	/// we retrieve at startup ...
 	/// </summary>
 	object json_layout = null;
+	///
 
 	///
 	private void OnButtonClick(object window, object cell)
@@ -132,7 +202,7 @@ public class main
 	/// 
 	/// </summary>
 	/// <param name="btnName"></param>
-	private void OnFormButtonClick(object sender,object arg)
+	private void OnFormButtonClick(object sender)
 	{
 		Window.Alert(" OnFormButtonClick " + sender.ToString());
 	}
@@ -172,7 +242,7 @@ public class main
 
 			main_menu.AddMenu(null, "Form", "Form", false);
 			main_menu.AddMenuItem("Form", 0, "Form_Show", "Show Form...", false);
-			main_menu.AddMenuItem("Form", 1, "Form_Hide", "Hide Form...", false);
+			main_menu.AddMenuItem("Form", 1, "Form_Show_Modal", "Show Modal Form...", false);
 			//			main_menu.Load("data/menu.xml");
 			// menus get built in reverse. imagine push_back ...
 			main_menu.AddMenu(null, "Server", "Server", false);
@@ -188,31 +258,18 @@ public class main
 			main_menu.OnClick += OnMenuClick;
 		}
 
+		object flayout = NativeCode.getLayout("formLayout");
 		//
-		wf = new DHTMLXWindowFactory();
+		wf = DHTMLXWindowFactory.Instance;
+
 		// create the Window factory
 		//win = wf.Create("Window",60,60,640,480);
-		win = new DHTMLXWindow(wf,"Window",60,60,640,480);
-		//
-		object flayout = NativeCode.getLayout("formLayout");
-		// object instance = win.CreateForm(layout);
-		//
-		DHTMLXForm form = new DHTMLXForm(win,flayout);
-		//
-		String s = form.getFormData();
-		//
-		form.OnButtonClick += OnFormButtonClick;
-		//form.OnButtonClick += win.FormButtonHandler;
-		//
-		Test t = new Test("Just testing");
-		//
-		if (t != null)
-		{
-			Window.Alert(t.Value());
-		}
+		win = new DHTMLXWindow(wf, "Window", 60, 60, 640, 480, flayout);
+		win.Visible = false;
+		win.Text = "Popup Window with embedded form";
+		win.OnClick += OnButtonClicked;
 
-		//
-		// jQuery.Ajax()
+		// do some AJAxing at startup
 		jQueryAjaxOptions opts = new jQueryAjaxOptions { Url = "http://localhost:8888/data/form1.json", DataType = "json", Async = true };
 		// make the request
 		var req = jQuery.Ajax(opts);
