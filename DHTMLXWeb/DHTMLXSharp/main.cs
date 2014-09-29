@@ -145,6 +145,7 @@ public class main
 			if (win != null)
 			{
 				//win.Text = id;
+				win.Center = true;
 				win.Visible = true;
 			}
 		}
@@ -153,9 +154,18 @@ public class main
 			if (win != null)
 			{
 				//win.Text = id;
+				win.Center = true;
 				win.Visible = true;
 				win.Modal = true;
 			}
+		}
+		else if (id == "Tree_Load_Local")
+		{
+			grid.LoadJSON("./data/data.json");
+		}
+		else if (id == "Tree_Load_Remote")
+		{
+			grid.LoadURI("http://localhost:8888/ajax");
 		}
 	}
 
@@ -171,14 +181,19 @@ public class main
 	/// <summary>
 	/// /// The main application layout object
 	/// </summary>
-	DHTMLXLayoutObject layout = null;
+	DHTMLXLayout layout = null;
 	
 	/// <summary>
 	/// The main application menu
 	/// </summary>
 	DHTMLXMenu main_menu = null;
 	//
+	DHTMLXGrid grid = null;
+	//
 	DHTMLXTreeGrid tree_grid = null;
+	//
+	DHTMLXStatusBar status_bar = null;
+	DHTMLXToolBar tool_bar = null;
 	//
 	/// <summary>
 	/// layout definition stored as a JSON object
@@ -193,6 +208,10 @@ public class main
 		Window.Alert("OnButtonClick");
 	}
 
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="data"></param>
 	public void OnAjaxCallback(object data)
 	{
 
@@ -216,29 +235,50 @@ public class main
 		NativeCode.CallJS("init");
 		//NativeCode.InitializeDHTMLX();
 		 //
-		layout = new DHTMLXLayoutObject(Document.Body,"1C");
+		layout = new DHTMLXLayout(Document.Body, DHTMLXLayout.Format.e1C);
 		// this is transient and obeys C# scoping
 		DHTMLXCell cell = layout.Cells("a");
 		//
-		tree_grid = cell.AttachGrid();
-		if (tree_grid != null)
+		status_bar = new DHTMLXStatusBar(cell);
+		status_bar.Text = "Connected to localhost:8888";
+
+		tool_bar = new DHTMLXToolBar(cell);
+		tool_bar.SetIconPath("data/imgs/");
+		tool_bar.LoadXML("data/toolbar.xml");
+#if true
+
+		DHTMLXTreeGridSettings settings = new DHTMLXTreeGridSettings();
+		settings.column_types = "tree,ed,txt,ch,ch";
+		settings.column_widths = "150,100,100,100,100";
+		settings.column_text = "Tree,Plain Text,Long Text,Color,Checkbox";
+		settings.content_url = "data/treegrid.xml";
+		tree_grid = new DHTMLXTreeGrid(cell,settings);
+
+#else
+		grid = new DHTMLXGrid(cell);
+		if (grid != null)
 		{
 //			tree_grid.LoadXML("data/treegrid.xml");
-			tree_grid.SetColumnTitles("Text,Filter1,Filter2,Filter3");
-			tree_grid.SetColumnWidths("100,80,80,80");
-			tree_grid.Init();
-			tree_grid.AddRow(0, "Row 0", 0);
-			tree_grid.AddRow(1, "Row 1", 1);
-			tree_grid.AddRow(2, "Row 2", 2);
-			tree_grid.AddRow(3, "Row 4", 3);
-			tree_grid.AddRow(4, "Row 5", 4);
-			tree_grid.AddRow(5, "Row 6", 5);
+			grid.SetColumnTitles("Text,Filter1,Filter2,Filter3");
+			grid.SetColumnWidths("100,80,80,80");
+			grid.Init();
+			grid.AddRow(0, "Row 0", 0);
+			grid.AddRow(1, "Row 1", 1);
+			grid.AddRow(2, "Row 2", 2);
+			grid.AddRow(3, "Row 4", 3);
+			grid.AddRow(4, "Row 5", 4);
+			grid.AddRow(5, "Row 6", 5);
 		}
+#endif
 		//
-		main_menu = cell.AttachMenu();
+		main_menu = new DHTMLXMenu(cell);
 		//
 		if (main_menu != null)
 		{
+
+			main_menu.AddMenu(null, "Tree", "Tree", false);
+			main_menu.AddMenuItem("Tree", 0, "Tree_Load_Local", "Load Tree from Assets...", false);
+			main_menu.AddMenuItem("Tree", 1, "Tree_Load_Remote", "Load Tree from Server...", false);
 
 			main_menu.AddMenu(null, "Form", "Form", false);
 			main_menu.AddMenuItem("Form", 0, "Form_Show", "Show Form...", false);
@@ -264,7 +304,7 @@ public class main
 
 		// create the Window factory
 		//win = wf.Create("Window",60,60,640,480);
-		win = new DHTMLXWindow(wf, "Window", 60, 60, 640, 480, flayout);
+		win = new DHTMLXWindow(wf, "Window", 60, 60, 320, 240, flayout);
 		win.Visible = false;
 		win.Text = "Popup Window with embedded form";
 		win.OnClick += OnButtonClicked;

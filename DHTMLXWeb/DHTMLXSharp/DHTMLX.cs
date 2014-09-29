@@ -7,35 +7,6 @@ using jQueryApi;
 
 namespace DHTMLXSharp
 {
-	class DHTMLXTreeGrid
-	{
-		public DHTMLXTreeGrid() { }
-
-		[InlineCode("{this}.setHeader({titles})")]
-		public void SetColumnTitles(String titles) { }
-
-		[InlineCode("{this}.setInitWidths({widths})")]
-		public void SetColumnWidths(String widths) { }
-
-		[InlineCode("{this}.init()")]
-		public void Init() { }
-
-		//[InlineCode("{this}.addRowAfter({new_id},{text},{sibling_id},{img},{isChild})")]
-		[InlineCode("{this}.addRow({new_id},{text},{index})")]
-		public void AddRow(int new_id, string text, int index) { }
-
-		//-------------------------------------------------
-		/// <summary>
-		/// Load content from an XML file
-		/// </summary>
-		/// <param name="xml_path"></param>
-		[InlineCode("{this}.loadXML({xml_path})")]
-		public void LoadXML(String xml_path) { }
-
-		/// events
-		public delegate void EventHandlerType(String id,String zoneId,object caState);
-	}
-
 	/// <summary>
 	/// 
 	/// </summary>
@@ -47,38 +18,311 @@ namespace DHTMLXSharp
 		/// <param name="obj"></param>
 		[InlineCode("new dhtmlXLayoutCell({obj})")]
 		public DHTMLXCell(object obj) { }
+	}
 
-		[InlineCode("{this}.attachMenu()")]
-		public DHTMLXMenu AttachMenu() { return null; }
+	/// <summary>
+	/// Status bar
+	/// </summary>
+	class DHTMLXStatusBar
+	{
+		/// <summary>
+		/// The widget instance
+		/// </summary>
+		object _layout = null;
 
-		[InlineCode("{this}.attachGrid()")]
-		public DHTMLXTreeGrid AttachGrid() { return null; }
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="parent"></param>
+		/// <returns></returns>
+		[InlineCode("{parent}.attachStatusBar()")]
+		object _Attach(DHTMLXCell parent) { return null; }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="arg"></param>
+		[InlineCode("{this}.$_layout.setText({arg})")]
+		void _text(String arg) { }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		public String Text
+		{
+			set
+			{
+				_text(value);
+			}
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="parent"></param>
+		public DHTMLXStatusBar(DHTMLXCell parent)
+		{
+			_layout = _Attach(parent);
+		}
+	}
+
+	/// <summary>
+	/// Status bar
+	/// </summary>
+	class DHTMLXToolBar
+	{
+		/// <summary>
+		/// The widget instance
+		/// </summary>
+		object _layout = null;
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="parent"></param>
+		/// <returns></returns>
+		[InlineCode("{parent}.attachToolbar()")]
+		object _Attach(DHTMLXCell parent) { return null; }
+
+		[InlineCode("{this}.$_layout.setIconsPath({arg})")]
+		public void SetIconPath(String arg) { }
+
+		[InlineCode("{this}.$_layout.loadStruct({arg})")]
+		public void LoadXML(String arg) { }
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="parent"></param>
+		public DHTMLXToolBar(DHTMLXCell parent)
+		{
+			_layout = _Attach(parent);
+		}
+	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	class DHTMLXGrid
+	{
+		/// <summary>
+		/// The widget instance
+		/// </summary>
+		object _layout = null;
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="parent"></param>
+		/// <returns></returns>
+		[InlineCode("{parent}.attachGrid()")]
+		object _Attach(DHTMLXCell parent) { return null; }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="parent"></param>
+		public DHTMLXGrid(DHTMLXCell parent)
+		{
+			_layout = _Attach(parent);
+		}
+
+		[InlineCode("{this}.$_layout.setHeader({titles})")]
+		public void SetColumnTitles(String titles) { }
+
+		[InlineCode("{this}.$_layout.setInitWidths({widths})")]
+		public void SetColumnWidths(String widths) { }
+
+		[InlineCode("{this}.$_layout.init()")]
+		public void Init() { }
+
+		//[InlineCode("{this}.addRowAfter({new_id},{text},{sibling_id},{img},{isChild})")]
+		[InlineCode("{this}.$_layout.addRow({new_id},{text},{index})")]
+		public void AddRow(int new_id, string text, int index) { }
+
+		//-------------------------------------------------
+		/// <summary>
+		/// Load content from an XML file
+		/// </summary>
+		/// <param name="xml_path"></param>
+		[InlineCode("{this}.$_layout.loadXML({xml_path})")]
+		public void LoadXML(String xml_path) { }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="json_path"></param>
+		[InlineCode("{this}.$_layout.load({json_path},\"json\")")]
+		public void LoadJSON(String json_path) { }
+
+		[InlineCode("{this}.$_layout.load({uri})")]
+		public void LoadURI(String uri) { }
+
+		/// events
+		public delegate void EventHandlerType(String id, String zoneId, object caState);
+	}
+
+	[Serializable]
+	public class DHTMLXTreeGridSettings
+	{
+		public String image_path;
+		/// <summary>
+		/// column separated header types as in
+		/// "Tree,Plain Text,Long Text,Color,Checkbox"
+		/// </summary>
+		public String column_text;
+		/// <summary>
+		/// comma separated column widths
+		/// </summary>
+		public String column_widths;
+		/// <summary>
+		/// "tree,ed,txt,ch,ch"
+		/// </summary>
+		public String column_types;
+		/// <summary>
+		/// "dhx_skyblue"
+		/// </summary>
+		public String skin;
+		/// <summary>
+		/// server side data as in 
+		/// "../common/data.json"
+		/// </summary>
+		public String content_url;
+	}
+	
+	/// <summary>
+	/// 
+	/// </summary>
+	class DHTMLXTreeGrid
+	{
+		/// <summary>
+		/// The widget instance
+		/// </summary>
+		object _layout = null;
+
+		[InlineCode("{this}.$_layout.setHeader({titles})")]
+		public void SetColumnTitles(String titles) { }
+
+		[InlineCode("{this}.$_layout.setInitWidths({widths})")]
+		public void SetColumnWidths(String widths) { }
+
+		[InlineCode("{this}.$_layout.setColTypes({arg})")]
+		public void SetColumnTypes(String arg) { }
+
+		[InlineCode("{this}.$_layout.init()")]
+		public void Init() { }
+
+		[InlineCode("{this}.$_layout.load({json_path},\"json\")")]
+		public void LoadJSON(String json_path) { }
+
+		[InlineCode("{this}.$_layout.loadXML({xml_path})")]
+		public void LoadXML(String xml_path) { }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="parent"></param>
+		/// <returns></returns>
+		//[InlineCode("{parent}.attachTreeGrid()")]
+		[InlineCode("{parent}.attachGrid()")]
+		object _Attach(DHTMLXCell parent) { return null; }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="parent"></param>
+		public DHTMLXTreeGrid(DHTMLXCell parent,DHTMLXTreeGridSettings settings)
+		{
+			//
+			_layout = _Attach(parent);
+#if true
+			if (_layout != null && settings != null)
+			{
+				LoadXML(settings.content_url);
+			}
+#else
+			//
+			if (_layout != null && settings != null)
+			{
+				SetColumnTitles(settings.column_text);
+				SetColumnWidths(settings.column_widths);
+				SetColumnTypes(settings.column_types);
+				Init();
+				if (settings.skin != null)
+				{
+
+				}
+				if (settings.content_url != null)
+				{
+					LoadJSON(settings.content_url);
+				}
+			}
+#endif
+		}
 
 	}
 
 	/// <summary>
 	/// 
 	/// </summary>
-	class DHTMLXLayoutObject
+	class DHTMLXLayout
 	{
+		// the native instance
+		object _layout = null;
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="el"></param>
+		/// <param name="format"></param>
+		/// <returns></returns>
+		[InlineCode("new dhtmlXLayoutObject({el},{format})")]
+		object _Attach(Element el, string format) { return null; }
+
+		/// <summary>
+		/// JSON helper
+		/// </summary>
+		/// <param name="content"></param>
+		/// <returns></returns>
+		[InlineCode("jQuery.Parse({content})")]
+		object toJSON(String content) { return null; }
+
+		/// <summary>
+		/// Layout formats
+		/// http://docs.dhtmlx.com/layout__patterns.html
+		/// </summary>
+		public enum Format
+		{
+			e1C,
+			e2E,
+			e2U,
+			e3L,
+			e3U,
+		}
+
+		//////////////////////////////////////////////////////////////////////////
+		static Dictionary<Format,String> formats = new Dictionary<Format,String>();
+
 		/// <summary>
 		/// Create a new layout instance. Note use of {} markers for argument replacements
 		/// el => {el} and format => {format}
 		/// </summary>
 		/// Example: DHTMLXLayout layout = new DHTMLXLayout(Document.Body,"3U");
-		[InlineCode("new dhtmlXLayoutObject({el},{format})")]
-		public DHTMLXLayoutObject(Element el, string format) { }
+		public DHTMLXLayout(Element el, Format format)
+		{
+			String formatString = "1C";
+			if (formats.Count == 0)
+			{
+				formats.Add(Format.e1C,"1C");
+				formats.Add(Format.e2E, "2E");
+				formats.Add(Format.e2U, "2U");
+				formats.Add(Format.e3L, "3L");
+				formats.Add(Format.e3U, "3U");
+			}
+			formats.TryGetValue(format,out formatString);
+			_layout = _Attach(el,formatString);
+		}
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="content"></param>
-		/// where content is valid JSON according to 
-		/// http://docs.dhtmlx.com/layout__init.html
-		[InlineCode("new dhtmlXLayoutObject(jQuery.Parse({content}))")]
-		public DHTMLXLayoutObject(string content) { }
-
-		[InlineCode("{this}.cells({id})")]
+		[InlineCode("{this}.$_layout.cells({id})")]
 		public DHTMLXCell Cells(string id) { return null; }
 	}
 
@@ -120,7 +364,7 @@ namespace DHTMLXSharp
 		/// <param name="height"></param>
 		/// <returns></returns>
 		[InlineCode("{parent}.createWindow({id},{x},{y},{width},{height})")]
-		object Attach(DHTMLXWindowFactory parent, string id, int x, int y, int width, int height) {  return null; }
+		object _Attach(DHTMLXWindowFactory parent, string id, int x, int y, int width, int height) {  return null; }
 
 		/// <summary>
 		/// attach a new form
@@ -129,7 +373,7 @@ namespace DHTMLXSharp
 		/// <param name="layout"></param>
 		/// <returns></returns>
 		[InlineCode("{_window}.attachForm({layout})")]
-		object Attach(object _window, object layout) { return null; }
+		object _Attach(object _window, object layout) { return null; }
 		
 		/// <summary>
 		/// Much better. Uses strongly typed parent
@@ -142,10 +386,12 @@ namespace DHTMLXSharp
 		/// <param name="height"></param>
 		public DHTMLXWindow(DHTMLXWindowFactory parent, string id, int x, int y, int width, int height, object layout)
 		{
-			_window = Attach(parent,id,x,y,width,height);
+			// set up the window
+			_window = _Attach(parent,id,x,y,width,height);
 			if (layout != null)
 			{
-				_form = Attach(_window, layout);
+				// set up the form
+				_form = _Attach(_window, layout);
 				_FormClickHandler += _OnInternalClick;
 			}
 		}
@@ -192,6 +438,9 @@ namespace DHTMLXSharp
 		[InlineCode("{this}.$_window.setModal({state})")]
 		void _Modal(bool state) { }
 
+		[InlineCode("{this}.$_window.center()")]
+		void _Center() { }
+
 		/// <summary>
 		/// Set the Window's caption
 		/// </summary>
@@ -202,6 +451,20 @@ namespace DHTMLXSharp
 				if (_window != null)
 				{
 					_SetText(value);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Center the Window in the viewport ...
+		/// </summary>
+		public bool Center
+		{
+			set
+			{
+				if (_window != null)
+				{
+					_Center();
 				}
 			}
 		}
@@ -334,6 +597,7 @@ namespace DHTMLXSharp
 	/// </summary>
 	class DHTMLXMenu
 	{
+		object _menu = null;
 		/// <summary>
 		/// typedef an event handler
 		/// </summary>
@@ -344,23 +608,31 @@ namespace DHTMLXSharp
 		/// </summary>
 		public event EventHandlerType OnClick
 		{
-			[InlineCode("{this}.attachEvent('onClick',{value})")]
+			[InlineCode("{this}.$_menu.attachEvent('onClick',{value})")]
 			add { }
 			remove { }
 		}
 
-		/// <param name="obj"></param>
-		[InlineCode("new dhtmlXMenuObject({obj})")]
-		public DHTMLXMenu(object obj) {}
+		[InlineCode("{parent}.attachMenu()")]
+		public object _Attach(DHTMLXCell parent) { return null; }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="parent"></param>
+		public DHTMLXMenu(DHTMLXCell parent)
+		{
+			_menu = _Attach(parent);
+		}
 
 		/// <summary>
 		/// Add a separator
 		/// </summary>
 		/// <param name="id"></param>
-		[InlineCode("{this}.addNewSeparator({id})")]
+		[InlineCode("{this}.$_menu.addNewSeparator({id})")]
 		public void AddSeparator(String id) {}
-		
-		[InlineCode("{this}.addNewSibling({parentId}, {id}, {caption}, {enabled})")]
+
+		[InlineCode("{this}.$_menu.addNewSibling({parentId}, {id}, {caption}, {enabled})")]
 		public void AddMenu(String parentId, String id, String caption, bool enabled) {}
 
 		/// <summary>
@@ -371,38 +643,28 @@ namespace DHTMLXSharp
 		/// <param name="id">this menu items ID</param>
 		/// <param name="text">Menu text</param>
 		/// <param name="enabled">enabled or not</param>
-		[InlineCode("{this}.addNewChild({parentId},{position},{id},{text},{enabled})")]
+		[InlineCode("{this}.$_menu.addNewChild({parentId},{position},{id},{text},{enabled})")]
 		public void AddMenuItem(String parentId, int position, String id, string text, bool enabled) { }
-
-		/// <summary>
-		/// Given a menuID return any parent ID or null
-		/// </summary>
-		/// <param name="menuId"></param>
-		/// <returns></returns>
-		/// JME audit:TBD
-//		[InlineCode("{this}.getParentId({menuId})")]
-		public static String GetParentId(String menuId) { return null; }
-		
 
 		/// <summary>
 		/// Enable the menu
 		/// </summary>
 		/// <param name="menuId"></param>
-		[InlineCode("{this}.setItemEnabled({menuId})")]
+		[InlineCode("{this}.$_menu.setItemEnabled({menuId})")]
 		public void EnableMenu(String menuId) {}
 
 		/// <summary>
 		/// Disable the menu
 		/// </summary>
 		/// <param name="menuId"></param>
-		[InlineCode("{this}.setItemDisabled({menuId})")]
+		[InlineCode("{this}.$_menu.setItemDisabled({menuId})")]
 		public void DisableMenu(String menuId) {}
 
 		/// <summary>
 		/// Load a menu from an XML or other definition
 		/// </summary>
 		/// <param name="menuDefinition"></param>
-		[InlineCode("{this}.loadStruct({menuDefinition})")]
+		[InlineCode("{this}.$_menu.loadStruct({menuDefinition})")]
 		public void Load(string menuDefinition) {}
 	}
 

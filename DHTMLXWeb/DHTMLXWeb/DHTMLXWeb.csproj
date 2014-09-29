@@ -39,6 +39,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="index.html" />
+    <Content Include="scripts\dhtmlx.css" />
     <Content Include="scripts\dhtmlx.js" />
     <Content Include="scripts\DHTMLXSharp.js" />
     <None Include="Properties\PublishProfiles\NovaDSP.pubxml" />

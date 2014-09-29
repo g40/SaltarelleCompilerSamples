@@ -4,27 +4,72 @@
 	var $DHTMLXSharp_$DHTMLXCell = function() {
 	};
 	////////////////////////////////////////////////////////////////////////////////
-	// DHTMLXSharp.DHTMLXLayoutObject
-	var $DHTMLXSharp_$DHTMLXLayoutObject = function() {
+	// DHTMLXSharp.DHTMLXGrid
+	var $DHTMLXSharp_$DHTMLXGrid = function(parent) {
+		this.$_layout = null;
+		this.$_layout = parent.attachGrid();
 	};
 	////////////////////////////////////////////////////////////////////////////////
+	// DHTMLXSharp.DHTMLXLayout
+	var $DHTMLXSharp_$DHTMLXLayout = function(el, format) {
+		this.$_layout = null;
+		var formatString = { $: '1C' };
+		if ($DHTMLXSharp_$DHTMLXLayout.$formats.get_count() === 0) {
+			$DHTMLXSharp_$DHTMLXLayout.$formats.add(0, '1C');
+			$DHTMLXSharp_$DHTMLXLayout.$formats.add(1, '2E');
+			$DHTMLXSharp_$DHTMLXLayout.$formats.add(2, '2U');
+			$DHTMLXSharp_$DHTMLXLayout.$formats.add(3, '3L');
+			$DHTMLXSharp_$DHTMLXLayout.$formats.add(4, '3U');
+		}
+		$DHTMLXSharp_$DHTMLXLayout.$formats.tryGetValue(format, formatString);
+		this.$_layout = new dhtmlXLayoutObject(el, formatString.$);
+	};
+	////////////////////////////////////////////////////////////////////////////////
+	// DHTMLXSharp.DHTMLXLayout.Format
+	var $DHTMLXSharp_$DHTMLXLayout$Format = function() {
+	};
+	$DHTMLXSharp_$DHTMLXLayout$Format.prototype = { $e1C: 0, $e2E: 1, $e2U: 2, $e3L: 3, $e3U: 4 };
+	ss.registerEnum(null, 'DHTMLXSharp.$DHTMLXLayout$Format', $DHTMLXSharp_$DHTMLXLayout$Format, false);
+	////////////////////////////////////////////////////////////////////////////////
 	// DHTMLXSharp.DHTMLXMenu
-	var $DHTMLXSharp_$DHTMLXMenu = function() {
+	var $DHTMLXSharp_$DHTMLXMenu = function(parent) {
+		this.$_menu = null;
+		this.$_menu = parent.attachMenu();
 	};
 	$DHTMLXSharp_$DHTMLXMenu.prototype = {
 		remove_$onClick: function(value) {
 		}
 	};
-	$DHTMLXSharp_$DHTMLXMenu.$getParentId = function(menuId) {
-		return null;
+	////////////////////////////////////////////////////////////////////////////////
+	// DHTMLXSharp.DHTMLXStatusBar
+	var $DHTMLXSharp_$DHTMLXStatusBar = function(parent) {
+		this.$_layout = null;
+		this.$_layout = parent.attachStatusBar();
+	};
+	$DHTMLXSharp_$DHTMLXStatusBar.prototype = {
+		set_$text: function(value) {
+			this.$_layout.setText(value);
+		}
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// DHTMLXSharp.DHTMLXToolbar
 	var $DHTMLXSharp_$DHTMLXToolbar = function() {
 	};
 	////////////////////////////////////////////////////////////////////////////////
+	// DHTMLXSharp.DHTMLXToolBar
+	var $DHTMLXSharp_$DHTMLXToolBar = function(parent) {
+		this.$_layout = null;
+		this.$_layout = parent.attachToolbar();
+	};
+	////////////////////////////////////////////////////////////////////////////////
 	// DHTMLXSharp.DHTMLXTreeGrid
-	var $DHTMLXSharp_$DHTMLXTreeGrid = function() {
+	var $DHTMLXSharp_$DHTMLXTreeGrid = function(parent, settings) {
+		this.$_layout = null;
+		//
+		this.$_layout = parent.attachGrid();
+		if (ss.isValue(this.$_layout) && ss.isValue(settings)) {
+			this.$_layout.loadXML(settings.content_url);
+		}
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// DHTMLXSharp.DHTMLXWindow
@@ -32,8 +77,10 @@
 		this.$_window = null;
 		this.$_form = null;
 		this.$1$OnClickField = null;
+		// set up the window
 		this.$_window = parent.createWindow(id, x, y, width, height);
 		if (ss.isValue(layout)) {
+			// set up the form
 			this.$_form = this.$_window.attachForm(layout);
 			this.$_form.attachEvent('onButtonClick', ss.mkdel(this, this.$_OnInternalClick));
 		}
@@ -47,6 +94,11 @@
 		set_$text: function(value) {
 			if (ss.isValue(this.$_window)) {
 				this.$_window.setText(value);
+			}
+		},
+		set_$center: function(value) {
+			if (ss.isValue(this.$_window)) {
+				this.$_window.center();
 			}
 		},
 		set_$visible: function(value) {
@@ -110,13 +162,33 @@
 		}
 	};
 	////////////////////////////////////////////////////////////////////////////////
+	// DHTMLXSharp.DHTMLXTreeGridSettings
+	var $DHTMLXSharp_DHTMLXTreeGridSettings = function() {
+	};
+	$DHTMLXSharp_DHTMLXTreeGridSettings.createInstance = function() {
+		return $DHTMLXSharp_DHTMLXTreeGridSettings.$ctor();
+	};
+	$DHTMLXSharp_DHTMLXTreeGridSettings.$ctor = function() {
+		var $this = {};
+		$this.image_path = null;
+		$this.column_text = null;
+		$this.column_widths = null;
+		$this.column_types = null;
+		$this.skin = null;
+		$this.content_url = null;
+		return $this;
+	};
+	////////////////////////////////////////////////////////////////////////////////
 	// DHTMLXSharp.main
 	var $DHTMLXSharp_main = function() {
 		this.$wf = null;
 		this.$win = null;
 		this.$layout = null;
 		this.$main_menu = null;
+		this.$grid = null;
 		this.$tree_grid = null;
+		this.$status_bar = null;
+		this.$tool_bar = null;
 		this.$json_layout = null;
 	};
 	$DHTMLXSharp_main.prototype = {
@@ -185,15 +257,23 @@
 			else if (id === 'Form_Show') {
 				if (ss.isValue(this.$win)) {
 					//win.Text = id;
+					this.$win.set_$center(true);
 					this.$win.set_$visible(true);
 				}
 			}
 			else if (id === 'Form_Show_Modal') {
 				if (ss.isValue(this.$win)) {
 					//win.Text = id;
+					this.$win.set_$center(true);
 					this.$win.set_$visible(true);
 					this.$win.set_$modal(true);
 				}
+			}
+			else if (id === 'Tree_Load_Local') {
+				this.$grid.$_layout.load('./data/data.json', 'json');
+			}
+			else if (id === 'Tree_Load_Remote') {
+				this.$grid.$_layout.load('http://localhost:8888/ajax');
 			}
 		},
 		$onButtonClick: function(window, cell) {
@@ -209,48 +289,49 @@
 			init();
 			//NativeCode.InitializeDHTMLX();
 			//
-			this.$layout = new dhtmlXLayoutObject(document.body, '1C');
+			this.$layout = new $DHTMLXSharp_$DHTMLXLayout(document.body, 0);
 			// this is transient and obeys C# scoping
-			var cell = this.$layout.cells('a');
+			var cell = this.$layout.$_layout.cells('a');
 			//
-			this.$tree_grid = cell.attachGrid();
-			if (ss.isValue(this.$tree_grid)) {
-				//			tree_grid.LoadXML("data/treegrid.xml");
-				this.$tree_grid.setHeader('Text,Filter1,Filter2,Filter3');
-				this.$tree_grid.setInitWidths('100,80,80,80');
-				this.$tree_grid.init();
-				this.$tree_grid.addRow(0, 'Row 0', 0);
-				this.$tree_grid.addRow(1, 'Row 1', 1);
-				this.$tree_grid.addRow(2, 'Row 2', 2);
-				this.$tree_grid.addRow(3, 'Row 4', 3);
-				this.$tree_grid.addRow(4, 'Row 5', 4);
-				this.$tree_grid.addRow(5, 'Row 6', 5);
-			}
+			this.$status_bar = new $DHTMLXSharp_$DHTMLXStatusBar(cell);
+			this.$status_bar.set_$text('Connected to localhost:8888');
+			this.$tool_bar = new $DHTMLXSharp_$DHTMLXToolBar(cell);
+			this.$tool_bar.$_layout.setIconsPath('data/imgs/');
+			this.$tool_bar.$_layout.loadStruct('data/toolbar.xml');
+			var settings = $DHTMLXSharp_DHTMLXTreeGridSettings.$ctor();
+			settings.column_types = 'tree,ed,txt,ch,ch';
+			settings.column_widths = '150,100,100,100,100';
+			settings.column_text = 'Tree,Plain Text,Long Text,Color,Checkbox';
+			settings.content_url = 'data/treegrid.xml';
+			this.$tree_grid = new $DHTMLXSharp_$DHTMLXTreeGrid(cell, settings);
 			//
-			this.$main_menu = cell.attachMenu();
+			this.$main_menu = new $DHTMLXSharp_$DHTMLXMenu(cell);
 			//
 			if (ss.isValue(this.$main_menu)) {
-				this.$main_menu.addNewSibling(null, 'Form', 'Form', false);
-				this.$main_menu.addNewChild('Form', 0, 'Form_Show', 'Show Form...', false);
-				this.$main_menu.addNewChild('Form', 1, 'Form_Show_Modal', 'Show Modal Form...', false);
+				this.$main_menu.$_menu.addNewSibling(null, 'Tree', 'Tree', false);
+				this.$main_menu.$_menu.addNewChild('Tree', 0, 'Tree_Load_Local', 'Load Tree from Assets...', false);
+				this.$main_menu.$_menu.addNewChild('Tree', 1, 'Tree_Load_Remote', 'Load Tree from Server...', false);
+				this.$main_menu.$_menu.addNewSibling(null, 'Form', 'Form', false);
+				this.$main_menu.$_menu.addNewChild('Form', 0, 'Form_Show', 'Show Form...', false);
+				this.$main_menu.$_menu.addNewChild('Form', 1, 'Form_Show_Modal', 'Show Modal Form...', false);
 				//			main_menu.Load("data/menu.xml");
 				// menus get built in reverse. imagine push_back ...
-				this.$main_menu.addNewSibling(null, 'Server', 'Server', false);
-				this.$main_menu.addNewChild('Server', 0, 'Server_Ajax', 'Make AJAX call...', false);
-				this.$main_menu.addNewChild('Server', 1, 'Server_JSON', 'To JSON string...', false);
-				this.$main_menu.addNewSibling(null, 'file', 'File', false);
-				this.$main_menu.addNewChild('file', 0, 'open', 'Open', false);
-				this.$main_menu.addNewChild('file', 1, 'new', 'New', false);
-				this.$main_menu.addNewChild('file', 2, 'exit', 'Exit', false);
-				this.$main_menu.addNewSeparator('new');
-				this.$main_menu.attachEvent('onClick', ss.mkdel(this, this.$onMenuClick));
+				this.$main_menu.$_menu.addNewSibling(null, 'Server', 'Server', false);
+				this.$main_menu.$_menu.addNewChild('Server', 0, 'Server_Ajax', 'Make AJAX call...', false);
+				this.$main_menu.$_menu.addNewChild('Server', 1, 'Server_JSON', 'To JSON string...', false);
+				this.$main_menu.$_menu.addNewSibling(null, 'file', 'File', false);
+				this.$main_menu.$_menu.addNewChild('file', 0, 'open', 'Open', false);
+				this.$main_menu.$_menu.addNewChild('file', 1, 'new', 'New', false);
+				this.$main_menu.$_menu.addNewChild('file', 2, 'exit', 'Exit', false);
+				this.$main_menu.$_menu.addNewSeparator('new');
+				this.$main_menu.$_menu.attachEvent('onClick', ss.mkdel(this, this.$onMenuClick));
 			}
 			var flayout = Mapper['formLayout'];
 			//
 			this.$wf = $DHTMLXSharp_$DHTMLXWindowFactory.get_$instance();
 			// create the Window factory
 			//win = wf.Create("Window",60,60,640,480);
-			this.$win = new $DHTMLXSharp_$DHTMLXWindow(this.$wf, 'Window', 60, 60, 640, 480, flayout);
+			this.$win = new $DHTMLXSharp_$DHTMLXWindow(this.$wf, 'Window', 60, 60, 320, 240, flayout);
 			this.$win.set_$visible(false);
 			this.$win.set_$text('Popup Window with embedded form');
 			this.$win.add_$onClick(ss.mkdel(this, this.$onButtonClicked));
@@ -282,16 +363,21 @@
 		return $this;
 	};
 	ss.registerClass(null, 'DHTMLXSharp.$DHTMLXCell', $DHTMLXSharp_$DHTMLXCell);
-	ss.registerClass(null, 'DHTMLXSharp.$DHTMLXLayoutObject', $DHTMLXSharp_$DHTMLXLayoutObject);
+	ss.registerClass(null, 'DHTMLXSharp.$DHTMLXGrid', $DHTMLXSharp_$DHTMLXGrid);
+	ss.registerClass(null, 'DHTMLXSharp.$DHTMLXLayout', $DHTMLXSharp_$DHTMLXLayout);
 	ss.registerClass(null, 'DHTMLXSharp.$DHTMLXMenu', $DHTMLXSharp_$DHTMLXMenu);
+	ss.registerClass(null, 'DHTMLXSharp.$DHTMLXStatusBar', $DHTMLXSharp_$DHTMLXStatusBar);
 	ss.registerClass(null, 'DHTMLXSharp.$DHTMLXToolbar', $DHTMLXSharp_$DHTMLXToolbar);
+	ss.registerClass(null, 'DHTMLXSharp.$DHTMLXToolBar', $DHTMLXSharp_$DHTMLXToolBar);
 	ss.registerClass(null, 'DHTMLXSharp.$DHTMLXTreeGrid', $DHTMLXSharp_$DHTMLXTreeGrid);
 	ss.registerClass(null, 'DHTMLXSharp.$DHTMLXWindow', $DHTMLXSharp_$DHTMLXWindow);
 	ss.registerClass(null, 'DHTMLXSharp.$DHTMLXWindowFactory', $DHTMLXSharp_$DHTMLXWindowFactory);
 	ss.registerClass(null, 'DHTMLXSharp.$NativeCode', $DHTMLXSharp_$NativeCode);
 	ss.registerClass(null, 'DHTMLXSharp.$Test', $DHTMLXSharp_$Test);
+	ss.registerClass(global, 'DHTMLXSharp.DHTMLXTreeGridSettings', $DHTMLXSharp_DHTMLXTreeGridSettings);
 	ss.registerClass(global, 'DHTMLXSharp.main', $DHTMLXSharp_main);
 	ss.registerClass(global, 'DHTMLXSharp.main$JSONThing', $DHTMLXSharp_main$JSONThing);
+	$DHTMLXSharp_$DHTMLXLayout.$formats = new (ss.makeGenericType(ss.Dictionary$2, [$DHTMLXSharp_$DHTMLXLayout$Format, String]))();
 	$DHTMLXSharp_$DHTMLXWindowFactory.$_factory = null;
 	$DHTMLXSharp_main.$main();
 })();
