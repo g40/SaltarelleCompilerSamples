@@ -13,11 +13,33 @@ namespace DHTMLXSharp
 	class DHTMLXCell
 	{
 		/// <summary>
+		/// 
+		/// </summary>
+		object _Cell = null;
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="obj"></param>
+		/// <returns></returns>
+		[InlineCode("new dhtmlXLayoutCell({obj})")]
+		object _Attach(object obj) { return null; }
+
+		[InlineCode("{this}.$_cell.hideHeader()")]
+		void HideHeader() { }
+
+		/// <summary>
 		/// Constructor must take 
 		/// </summary>
 		/// <param name="obj"></param>
-		[InlineCode("new dhtmlXLayoutCell({obj})")]
-		public DHTMLXCell(object obj) { }
+		public DHTMLXCell(object obj) 
+		{
+			_Cell = _Attach(obj);
+			if (_Cell != null)
+			{
+				HideHeader();
+			}
+		}
 	}
 
 	/// <summary>
