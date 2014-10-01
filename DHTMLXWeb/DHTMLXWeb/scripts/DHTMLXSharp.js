@@ -9,6 +9,12 @@
 		this.$_layout = null;
 		this.$_layout = parent.attachGrid();
 	};
+	$DHTMLXSharp_$DHTMLXGrid.prototype = {
+		$enableDragDrop: function() {
+			this.$_layout.enableDragAndDrop(true, true);
+			this.$_layout.enableMercyDrag(true);
+		}
+	};
 	$DHTMLXSharp_$DHTMLXGrid.$ctor1 = function(parent) {
 		this.$_layout = null;
 		this.$_layout = parent.attachGrid();
@@ -91,6 +97,12 @@
 		this.$_layout = parent.attachGrid();
 		if (ss.isValue(this.$_layout) && ss.isValue(settings)) {
 			this.$_layout.loadXML(settings.content_url);
+		}
+	};
+	$DHTMLXSharp_$DHTMLXTreeGrid.prototype = {
+		$enableDragDrop: function() {
+			this.$_layout.enableDragAndDrop(true, true);
+			this.$_layout.enableMercyDrag(true);
 		}
 	};
 	$DHTMLXSharp_$DHTMLXTreeGrid.$ctor1 = function(parent, url) {
@@ -384,6 +396,7 @@
 			var settings = $DHTMLXSharp_DHTMLXTreeGridSettings.$ctor();
 			settings.content_url = 'data/filter_bases.xml';
 			this.$base_filters = new $DHTMLXSharp_$DHTMLXTreeGrid(cell, settings);
+			this.$base_filters.$enableDragDrop();
 			//---------------------------------------------------------------------------
 			// Right-hand panel contains catalog/results/charts
 			cell = central_panel.$_layout.cells('b');
@@ -399,14 +412,17 @@
 			var catalog_settings = $DHTMLXSharp_DHTMLXTreeGridSettings.$ctor();
 			catalog_settings.content_url = 'data/catalog.xml';
 			var catalog = new $DHTMLXSharp_$DHTMLXTreeGrid.$ctor2(tab, catalog_settings);
+			catalog.$enableDragDrop();
 			//---------------------------------------------------------------------------
 			// filter treee
 			cell = central_panel.$_layout.cells('c');
 			this.$tree_filters = new $DHTMLXSharp_$DHTMLXTreeGrid.$ctor1(cell, 'data/tree_filter.xml');
+			this.$tree_filters.$enableDragDrop();
 			//---------------------------------------------------------------------------
 			tab = tabbar.$_layout.cells('Results');
 			this.$grid = new $DHTMLXSharp_$DHTMLXGrid.$ctor1(tab);
 			if (ss.isValue(this.$grid)) {
+				this.$grid.$enableDragDrop();
 				this.$grid.$_layout.setHeader('Text,Filter1,Filter2,Filter3');
 				this.$grid.$_layout.setInitWidths('100,80,80,80');
 				this.$grid.$_layout.init();

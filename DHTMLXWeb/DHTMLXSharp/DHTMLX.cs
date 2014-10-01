@@ -218,6 +218,18 @@ namespace DHTMLXSharp
 			_layout = _Attach(parent);
 		}
 
+		[InlineCode("{this}.$_layout.enableDragAndDrop(true,true)")]
+		void _EnableDragDrop() { }
+
+		[InlineCode("{this}.$_layout.enableMercyDrag(true)")]
+		void _EnableDragDropCopy() { }
+
+		public void EnableDragDrop()
+		{
+			_EnableDragDrop();
+			_EnableDragDropCopy();
+		}	
+
 		[InlineCode("{this}.$_layout.setHeader({titles})")]
 		public void SetColumnTitles(String titles) { }
 
@@ -311,6 +323,18 @@ namespace DHTMLXSharp
 
 		[InlineCode("{this}.$_layout.loadXML({xml_path})")]
 		public void LoadXML(String xml_path) { }
+
+		[InlineCode("{this}.$_layout.enableDragAndDrop(true,true)")]
+		void _EnableDragDrop() { }
+
+		[InlineCode("{this}.$_layout.enableMercyDrag(true)")]
+		void _EnableDragDropCopy() { }
+
+		public void EnableDragDrop()
+		{
+			_EnableDragDrop();
+			_EnableDragDropCopy();
+		}
 
 		/// <summary>
 		/// 

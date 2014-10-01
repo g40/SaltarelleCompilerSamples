@@ -293,6 +293,7 @@ public class main
 		DHTMLXTreeGridSettings settings = new DHTMLXTreeGridSettings();
 		settings.content_url = "data/filter_bases.xml";
 		base_filters = new DHTMLXTreeGrid(cell, settings);
+		base_filters.EnableDragDrop();
 
 		//---------------------------------------------------------------------------
 		// Right-hand panel contains catalog/results/charts
@@ -311,17 +312,19 @@ public class main
 		DHTMLXTreeGridSettings catalog_settings = new DHTMLXTreeGridSettings();
 		catalog_settings.content_url = "data/catalog.xml";
 		DHTMLXTreeGrid catalog = new DHTMLXTreeGrid(tab, catalog_settings);
-
+		catalog.EnableDragDrop();
 		//---------------------------------------------------------------------------
 		// filter treee
 		cell = central_panel.Cells("c");
 		tree_filters = new DHTMLXTreeGrid(cell, "data/tree_filter.xml");
+		tree_filters.EnableDragDrop();
 
 		//---------------------------------------------------------------------------
 		tab = tabbar.Tabs("Results");
 		grid = new DHTMLXGrid(tab);
 		if (grid != null)
 		{
+			grid.EnableDragDrop();
 			grid.SetColumnTitles("Text,Filter1,Filter2,Filter3");
 			grid.SetColumnWidths("100,80,80,80");
 			grid.Init();
