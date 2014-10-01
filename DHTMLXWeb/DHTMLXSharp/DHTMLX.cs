@@ -12,21 +12,15 @@ namespace DHTMLXSharp
 	/// </summary>
 	class DHTMLXCell
 	{
-		/// <summary>
-		/// 
-		/// </summary>
-		object _Cell = null;
+		[InlineCode("{this}.hideHeader()")]
+		public void HideHeader() { }
 
 		/// <summary>
-		/// 
+		/// Set the cell header text
 		/// </summary>
-		/// <param name="obj"></param>
-		/// <returns></returns>
-		[InlineCode("new dhtmlXLayoutCell({obj})")]
-		object _Attach(object obj) { return null; }
-
-		[InlineCode("{this}.$_cell.hideHeader()")]
-		void HideHeader() { }
+		/// <param name="text"></param>
+		[InlineCode("{this}.setText({text})")]
+		public void SetText(String text) { }
 
 		/// <summary>
 		/// Constructor must take 
@@ -34,11 +28,6 @@ namespace DHTMLXSharp
 		/// <param name="obj"></param>
 		public DHTMLXCell(object obj) 
 		{
-			_Cell = _Attach(obj);
-			if (_Cell != null)
-			{
-				HideHeader();
-			}
 		}
 	}
 
@@ -119,6 +108,78 @@ namespace DHTMLXSharp
 		{
 			_layout = _Attach(parent);
 		}
+
+	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	class DHTMLXTab
+	{
+		[InlineCode("{this}.hideHeader()")]
+		public void HideHeader() { }
+
+		/// <summary>
+		/// Set the cell header text
+		/// </summary>
+		/// <param name="text"></param>
+		[InlineCode("{this}.setText({text})")]
+		public void SetText(String text) { }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		public DHTMLXTab()
+		{
+		}
+	}
+
+	/// <summary>
+	/// Status bar
+	/// </summary>
+	class DHTMLXTabBar
+	{
+		/// <summary>
+		/// The widget instance
+		/// </summary>
+		object _layout = null;
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="parent"></param>
+		/// <returns></returns>
+		[InlineCode("{parent}.attachTabbar()")]
+		object _Attach(DHTMLXCell parent) { return null; }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="id"></param>
+		/// <param name="text"></param>
+		/// <param name="Width"></param>
+		[InlineCode("{this}.$_layout.addTab({id},{text},{width})")]
+		public void AddTab(String id, String text, int width) { }
+
+		[InlineCode("{this}.$_layout.cells({id}).setActive()")]
+		public void Activate(String id) { }
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="id"></param>
+		/// <returns></returns>
+		[InlineCode("{this}.$_layout.cells({id})")]
+		public DHTMLXTab Tabs(String id) { return null; }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="parent"></param>
+		public DHTMLXTabBar(DHTMLXCell parent)
+		{
+			_layout = _Attach(parent);
+		}
+
 	}
 
 	/// <summary>
@@ -137,13 +198,22 @@ namespace DHTMLXSharp
 		/// <param name="parent"></param>
 		/// <returns></returns>
 		[InlineCode("{parent}.attachGrid()")]
-		object _Attach(DHTMLXCell parent) { return null; }
+		object _Attach(object parent) { return null; }
 
 		/// <summary>
 		/// 
 		/// </summary>
 		/// <param name="parent"></param>
 		public DHTMLXGrid(DHTMLXCell parent)
+		{
+			_layout = _Attach(parent);
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="parent"></param>
+		public DHTMLXGrid(DHTMLXTab parent)
 		{
 			_layout = _Attach(parent);
 		}
@@ -183,6 +253,9 @@ namespace DHTMLXSharp
 		public delegate void EventHandlerType(String id, String zoneId, object caState);
 	}
 
+	/// <summary>
+	/// Settings for creating a TreeGrid
+	/// </summary>
 	[Serializable]
 	public class DHTMLXTreeGridSettings
 	{
@@ -246,7 +319,7 @@ namespace DHTMLXSharp
 		/// <returns></returns>
 		//[InlineCode("{parent}.attachTreeGrid()")]
 		[InlineCode("{parent}.attachGrid()")]
-		object _Attach(DHTMLXCell parent) { return null; }
+		object _Attach(object parent) { return null; }
 
 		/// <summary>
 		/// 
@@ -256,31 +329,40 @@ namespace DHTMLXSharp
 		{
 			//
 			_layout = _Attach(parent);
-#if true
 			if (_layout != null && settings != null)
 			{
 				LoadXML(settings.content_url);
 			}
-#else
-			//
-			if (_layout != null && settings != null)
-			{
-				SetColumnTitles(settings.column_text);
-				SetColumnWidths(settings.column_widths);
-				SetColumnTypes(settings.column_types);
-				Init();
-				if (settings.skin != null)
-				{
-
-				}
-				if (settings.content_url != null)
-				{
-					LoadJSON(settings.content_url);
-				}
-			}
-#endif
 		}
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="parent"></param>
+		/// <param name="url"></param>
+		public DHTMLXTreeGrid(DHTMLXCell parent,String url)
+		{
+			//
+			_layout = _Attach(parent);
+			if (_layout != null && url != null)
+			{
+				LoadXML(url);
+			}
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="parent"></param>
+		public DHTMLXTreeGrid(DHTMLXTab parent, DHTMLXTreeGridSettings settings)
+		{
+			//
+			_layout = _Attach(parent);
+			if (_layout != null && settings != null)
+			{
+				LoadXML(settings.content_url);
+			}
+		}
 	}
 
 	/// <summary>
@@ -297,8 +379,8 @@ namespace DHTMLXSharp
 		/// <param name="el"></param>
 		/// <param name="format"></param>
 		/// <returns></returns>
-		[InlineCode("new dhtmlXLayoutObject({el},{format})")]
-		object _Attach(Element el, string format) { return null; }
+		[InlineCode("new dhtmlXLayoutObject({parent},{format})")]
+		object _Attach(object parent, string format) { return null; }
 
 		/// <summary>
 		/// JSON helper
@@ -317,8 +399,9 @@ namespace DHTMLXSharp
 			e1C,
 			e2E,
 			e2U,
-			e3L,
-			e3U,
+			e3J, // 3 cell vertical div, lhs splitter
+			e3L, // 3 cell vertical div, rhs splitter
+			e3U, // 3 cell horz div, top splitter
 		}
 
 		//////////////////////////////////////////////////////////////////////////
@@ -329,7 +412,17 @@ namespace DHTMLXSharp
 		/// el => {el} and format => {format}
 		/// </summary>
 		/// Example: DHTMLXLayout layout = new DHTMLXLayout(Document.Body,"3U");
-		public DHTMLXLayout(Element el, Format format)
+		public DHTMLXLayout(Element parent, Format format)
+		{
+			_Initialize(parent,format);
+		}
+
+		public DHTMLXLayout(DHTMLXCell parent, Format format)
+		{
+			_Initialize(parent,format);
+		}
+
+		private void _Initialize(object parent,Format format)
 		{
 			String formatString = "1C";
 			if (formats.Count == 0)
@@ -337,23 +430,16 @@ namespace DHTMLXSharp
 				formats.Add(Format.e1C,"1C");
 				formats.Add(Format.e2E, "2E");
 				formats.Add(Format.e2U, "2U");
+				formats.Add(Format.e3J, "3J");
 				formats.Add(Format.e3L, "3L");
 				formats.Add(Format.e3U, "3U");
 			}
 			formats.TryGetValue(format,out formatString);
-			_layout = _Attach(el,formatString);
+			_layout = _Attach(parent, formatString);
 		}
 
 		[InlineCode("{this}.$_layout.cells({id})")]
 		public DHTMLXCell Cells(string id) { return null; }
-	}
-
-	/// <summary>
-	/// 
-	/// </summary>
-	class DHTMLXToolbar
-	{
-
 	}
 
 	/// <summary>
@@ -415,6 +501,7 @@ namespace DHTMLXSharp
 				// set up the form
 				_form = _Attach(_window, layout);
 				_FormClickHandler += _OnInternalClick;
+				_WindowClickHandler += _OnInternalClick;
 			}
 		}
 
@@ -424,19 +511,6 @@ namespace DHTMLXSharp
 		/// </summary>
 		/// <returns></returns>
 		public String GetData() { return getFormData(); }
-
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="btnName"></param>
-		delegate void _FormEventHandler(string btnName);
-
-		event _FormEventHandler _FormClickHandler
-		{
-			[InlineCode("{this}.$_form.attachEvent('onButtonClick',{value})")]
-			add { }
-			remove { }
-		}
 
 		/// <summary>
 		/// Set the window text
@@ -516,6 +590,19 @@ namespace DHTMLXSharp
 		/// <summary>
 		/// true = modal, false = not
 		/// </summary>
+		public void ShowModal()
+		{
+			if (_window != null)
+			{
+				_Modal(true);
+				_Center();
+				_Show();
+			}
+		}
+
+		/// <summary>
+		/// true = modal, false = not
+		/// </summary>
 		public bool Modal
 		{
 			set
@@ -528,16 +615,29 @@ namespace DHTMLXSharp
 		}
 
 		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="btnName"></param>
+		delegate void _FormEventHandler(string btnName);
+
+		event _FormEventHandler _FormClickHandler
+		{
+			[InlineCode("{this}.$_form.attachEvent('onButtonClick',{value})")]
+			add { }
+			remove { }
+		}
+
+		/// <summary>
 		/// typedef an event handler
 		/// </summary>
-		delegate void _WindowHandlerType(object window, object cell);
+		delegate void _WindowHandlerType(string btnName);
 
 		/// <summary>
 		/// OnClick += Function with EventHandlerType signature
 		/// </summary>
-		event _WindowHandlerType _OnClick
+		event _WindowHandlerType _WindowClickHandler
 		{
-			[InlineCode("{this}.$_window.attachEvent('onClick',{value})")]
+			[InlineCode("{this}.$_window.attachEvent('onClose',{value})")]
 			add { }
 			remove { }
 		}
@@ -690,7 +790,9 @@ namespace DHTMLXSharp
 		public void Load(string menuDefinition) {}
 	}
 
-
+	/// <summary>
+	/// 
+	/// </summary>
 	class NativeCode
 	{
 		/// <summary>
@@ -710,6 +812,9 @@ namespace DHTMLXSharp
 
 		[InlineCode("Mapper[{layout_name}]")]
 		static public object getLayout(String layout_name) { return null; }
+
+		[InlineCode("console.log({arg})")]
+		static public void Log(String arg) {  }
 	}
 
 	/// <summary>

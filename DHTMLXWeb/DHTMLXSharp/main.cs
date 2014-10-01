@@ -75,6 +75,9 @@ public class main
 	/// <param name="name"></param>
 	private void OnButtonClicked(DHTMLXWindow window, string name)
 	{
+		//
+		NativeCode.Log("OnButtonClicked => " + name);
+
 		if (name == "save")
 		{
 //			string s = ;
@@ -190,7 +193,8 @@ public class main
 	//
 	DHTMLXGrid grid = null;
 	//
-	DHTMLXTreeGrid tree_grid = null;
+	DHTMLXTreeGrid base_filters = null;
+	DHTMLXTreeGrid tree_filters = null;
 	//
 	DHTMLXStatusBar status_bar = null;
 	DHTMLXToolBar tool_bar = null;
@@ -237,41 +241,18 @@ public class main
 		 //
 		layout = new DHTMLXLayout(Document.Body, DHTMLXLayout.Format.e1C);
 		// this is transient and obeys C# scoping
-		DHTMLXCell cell = layout.Cells("a");
+		DHTMLXCell main_cell = layout.Cells("a");
+		main_cell.HideHeader();
 		//
-		status_bar = new DHTMLXStatusBar(cell);
+		status_bar = new DHTMLXStatusBar(main_cell);
 		status_bar.Text = "Connected to localhost:8888";
 
-		tool_bar = new DHTMLXToolBar(cell);
+		tool_bar = new DHTMLXToolBar(main_cell);
 		tool_bar.SetIconPath("data/imgs/");
 		tool_bar.LoadXML("data/toolbar.xml");
-#if true
 
-		DHTMLXTreeGridSettings settings = new DHTMLXTreeGridSettings();
-		settings.column_types = "tree,ed,txt,ch,ch";
-		settings.column_widths = "150,100,100,100,100";
-		settings.column_text = "Tree,Plain Text,Long Text,Color,Checkbox";
-		settings.content_url = "data/treegrid.xml";
-		tree_grid = new DHTMLXTreeGrid(cell,settings);
-
-#else
-		grid = new DHTMLXGrid(cell);
-		if (grid != null)
-		{
-//			tree_grid.LoadXML("data/treegrid.xml");
-			grid.SetColumnTitles("Text,Filter1,Filter2,Filter3");
-			grid.SetColumnWidths("100,80,80,80");
-			grid.Init();
-			grid.AddRow(0, "Row 0", 0);
-			grid.AddRow(1, "Row 1", 1);
-			grid.AddRow(2, "Row 2", 2);
-			grid.AddRow(3, "Row 4", 3);
-			grid.AddRow(4, "Row 5", 4);
-			grid.AddRow(5, "Row 6", 5);
-		}
-#endif
 		//
-		main_menu = new DHTMLXMenu(cell);
+		main_menu = new DHTMLXMenu(main_cell);
 		//
 		if (main_menu != null)
 		{
@@ -289,25 +270,81 @@ public class main
 			main_menu.AddMenuItem("Server", 0, "Server_Ajax", "Make AJAX call...", false);
 			main_menu.AddMenuItem("Server", 1, "Server_JSON", "To JSON string...", false);
 
-			main_menu.AddMenu(null,"file","File",false);
-			main_menu.AddMenuItem("file",0,"open","Open",false);
-			main_menu.AddMenuItem("file",1, "new", "New", false);
-			main_menu.AddMenuItem("file",2, "exit", "Exit", false);
+			main_menu.AddMenu(null, "file", "File", false);
+			main_menu.AddMenuItem("file", 0, "open", "Open", false);
+			main_menu.AddMenuItem("file", 1, "new", "New", false);
+			main_menu.AddMenuItem("file", 2, "exit", "Exit", false);
 			main_menu.AddSeparator("new");
 
 			main_menu.OnClick += OnMenuClick;
 		}
 
+		// set up left hand side
+		DHTMLXLayout central_panel = new DHTMLXLayout(main_cell, DHTMLXLayout.Format.e3J);
+		central_panel.Cells("a").HideHeader();
+		central_panel.Cells("b").HideHeader();
+		central_panel.Cells("c").HideHeader();
+		//central_panel.Cells("c").SetText("Drag and drop from Catalog");
+		DHTMLXCell cell = central_panel.Cells("a");
+
+		//---------------------------------------------------------------------------
+		// bases tree
+		cell = central_panel.Cells("a");
+		DHTMLXTreeGridSettings settings = new DHTMLXTreeGridSettings();
+		settings.content_url = "data/filter_bases.xml";
+		base_filters = new DHTMLXTreeGrid(cell, settings);
+
+		//---------------------------------------------------------------------------
+		// Right-hand panel contains catalog/results/charts
+		cell = central_panel.Cells("b");
+		DHTMLXLayout right_panel = new DHTMLXLayout(cell, DHTMLXLayout.Format.e1C);
+		DHTMLXTabBar tabbar = new DHTMLXTabBar(right_panel.Cells("a"));
+		tabbar.AddTab("Catalog","Catalog",100);
+		tabbar.AddTab("Results", "Results", 100);
+		tabbar.AddTab("Charts", "Charts", 100);
+		tabbar.Activate("Catalog");
+
+		//---------------------------------------------------------------------------
+		// Create the variable catalog
+		DHTMLXTab tab = tabbar.Tabs("Catalog");
+		
+		DHTMLXTreeGridSettings catalog_settings = new DHTMLXTreeGridSettings();
+		catalog_settings.content_url = "data/catalog.xml";
+		DHTMLXTreeGrid catalog = new DHTMLXTreeGrid(tab, catalog_settings);
+
+		//---------------------------------------------------------------------------
+		// filter treee
+		cell = central_panel.Cells("c");
+		tree_filters = new DHTMLXTreeGrid(cell, "data/tree_filter.xml");
+
+		//---------------------------------------------------------------------------
+		tab = tabbar.Tabs("Results");
+		grid = new DHTMLXGrid(tab);
+		if (grid != null)
+		{
+			grid.SetColumnTitles("Text,Filter1,Filter2,Filter3");
+			grid.SetColumnWidths("100,80,80,80");
+			grid.Init();
+			grid.AddRow(0, "Row 0", 0);
+			grid.AddRow(1, "Row 1", 1);
+			grid.AddRow(2, "Row 2", 2);
+			grid.AddRow(3, "Row 4", 3);
+			grid.AddRow(4, "Row 5", 4);
+			grid.AddRow(5, "Row 6", 5);
+		}
+
+		//---------------------------------------------------------------------------
 		object flayout = NativeCode.getLayout("formLayout");
 		//
 		wf = DHTMLXWindowFactory.Instance;
 
 		// create the Window factory
 		//win = wf.Create("Window",60,60,640,480);
-		win = new DHTMLXWindow(wf, "Window", 60, 60, 320, 240, flayout);
+		win = new DHTMLXWindow(wf, "Window", 60, 60, 400, 320, flayout);
 		win.Visible = false;
 		win.Text = "Popup Window with embedded form";
 		win.OnClick += OnButtonClicked;
+		win.ShowModal();
 
 		// do some AJAxing at startup
 		jQueryAjaxOptions opts = new jQueryAjaxOptions { Url = "http://localhost:8888/data/form1.json", DataType = "json", Async = true };
