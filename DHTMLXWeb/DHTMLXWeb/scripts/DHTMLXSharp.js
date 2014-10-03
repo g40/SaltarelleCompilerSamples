@@ -4,26 +4,66 @@
 	var $DHTMLXSharp_$DHTMLXCell = function(obj) {
 	};
 	////////////////////////////////////////////////////////////////////////////////
+	// DHTMLXSharp.DHTMLXCombo
+	var $DHTMLXSharp_$DHTMLXCombo = function() {
+		this.$_instance = null;
+	};
+	$DHTMLXSharp_$DHTMLXCombo.prototype = {
+		get_$instance: function() {
+			return this.$_instance;
+		}
+	};
+	////////////////////////////////////////////////////////////////////////////////
+	// DHTMLXSharp.DHTMLXContextMenu
+	var $DHTMLXSharp_$DHTMLXContextMenu = function(iconURL) {
+		this.$_instance = null;
+		this.$_instance = new dhtmlXMenuObject();
+		if (ss.isValue(this.$_instance)) {
+			this.$_instance.setIconsPath(iconURL);
+			this.$_instance.renderAsContextMenu();
+		}
+	};
+	$DHTMLXSharp_$DHTMLXContextMenu.prototype = {
+		remove_$onClick: function(value) {
+		},
+		get_$instance: function() {
+			return this.$_instance;
+		}
+	};
+	////////////////////////////////////////////////////////////////////////////////
 	// DHTMLXSharp.DHTMLXGrid
 	var $DHTMLXSharp_$DHTMLXGrid = function(parent) {
-		this.$_layout = null;
-		this.$_layout = parent.attachGrid();
+		this.$_instance = null;
+		this.$_instance = parent.attachGrid();
 	};
 	$DHTMLXSharp_$DHTMLXGrid.prototype = {
 		$enableDragDrop: function() {
-			this.$_layout.enableDragAndDrop(true, true);
-			this.$_layout.enableMercyDrag(true);
+			this.$_instance.enableDragAndDrop(true, true);
+			this.$_instance.enableMercyDrag(true);
+		},
+		set_$enableMultipleSelection: function(value) {
+			if (ss.isValue(this.get_$instance())) {
+				this.$_instance.enableMultiselect(value);
+			}
+		},
+		remove_$_DragDropHandler: function(value) {
+		},
+		$setContextMenu: function(menu) {
+			this.$_instance.enableContextMenu(menu.get_$instance());
+		},
+		get_$instance: function() {
+			return this.$_instance;
 		}
 	};
 	$DHTMLXSharp_$DHTMLXGrid.$ctor1 = function(parent) {
-		this.$_layout = null;
-		this.$_layout = parent.attachGrid();
+		this.$_instance = null;
+		this.$_instance = parent.attachGrid();
 	};
 	$DHTMLXSharp_$DHTMLXGrid.$ctor1.prototype = $DHTMLXSharp_$DHTMLXGrid.prototype;
 	////////////////////////////////////////////////////////////////////////////////
 	// DHTMLXSharp.DHTMLXLayout
 	var $DHTMLXSharp_$DHTMLXLayout = function(parent, format) {
-		this.$_layout = null;
+		this.$_instance = null;
 		this.$_Initialize(parent, format);
 	};
 	$DHTMLXSharp_$DHTMLXLayout.prototype = {
@@ -38,11 +78,11 @@
 				$DHTMLXSharp_$DHTMLXLayout.$formats.add(5, '3U');
 			}
 			$DHTMLXSharp_$DHTMLXLayout.$formats.tryGetValue(format, formatString);
-			this.$_layout = new dhtmlXLayoutObject(parent, formatString.$);
+			this.$_instance = new dhtmlXLayoutObject(parent, formatString.$);
 		}
 	};
 	$DHTMLXSharp_$DHTMLXLayout.$ctor1 = function(parent, format) {
-		this.$_layout = null;
+		this.$_instance = null;
 		this.$_Initialize(parent, format);
 	};
 	$DHTMLXSharp_$DHTMLXLayout.$ctor1.prototype = $DHTMLXSharp_$DHTMLXLayout.prototype;
@@ -55,22 +95,25 @@
 	////////////////////////////////////////////////////////////////////////////////
 	// DHTMLXSharp.DHTMLXMenu
 	var $DHTMLXSharp_$DHTMLXMenu = function(parent) {
-		this.$_menu = null;
-		this.$_menu = parent.attachMenu();
+		this.$_instance = null;
+		this.$_instance = parent.attachMenu();
 	};
 	$DHTMLXSharp_$DHTMLXMenu.prototype = {
 		remove_$onClick: function(value) {
+		},
+		get_$instance: function() {
+			return this.$_instance;
 		}
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// DHTMLXSharp.DHTMLXStatusBar
 	var $DHTMLXSharp_$DHTMLXStatusBar = function(parent) {
-		this.$_layout = null;
-		this.$_layout = parent.attachStatusBar();
+		this.$_instance = null;
+		this.$_instance = parent.attachStatusBar();
 	};
 	$DHTMLXSharp_$DHTMLXStatusBar.prototype = {
 		set_$text: function(value) {
-			this.$_layout.setText(value);
+			this.$_instance.setText(value);
 		}
 	};
 	////////////////////////////////////////////////////////////////////////////////
@@ -80,45 +123,58 @@
 	////////////////////////////////////////////////////////////////////////////////
 	// DHTMLXSharp.DHTMLXTabBar
 	var $DHTMLXSharp_$DHTMLXTabBar = function(parent) {
-		this.$_layout = null;
-		this.$_layout = parent.attachTabbar();
+		this.$_instance = null;
+		this.$_instance = parent.attachTabbar();
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// DHTMLXSharp.DHTMLXToolBar
 	var $DHTMLXSharp_$DHTMLXToolBar = function(parent) {
-		this.$_layout = null;
-		this.$_layout = parent.attachToolbar();
+		this.$_instance = null;
+		this.$_instance = parent.attachToolbar();
 	};
 	////////////////////////////////////////////////////////////////////////////////
 	// DHTMLXSharp.DHTMLXTreeGrid
 	var $DHTMLXSharp_$DHTMLXTreeGrid = function(parent, settings) {
-		this.$_layout = null;
+		this.$_instance = null;
 		//
-		this.$_layout = parent.attachGrid();
-		if (ss.isValue(this.$_layout) && ss.isValue(settings)) {
-			this.$_layout.loadXML(settings.content_url);
+		this.$_instance = parent.attachGrid();
+		if (ss.isValue(this.$_instance) && ss.isValue(settings)) {
+			this.$_instance.loadXML(settings.content_url);
 		}
 	};
 	$DHTMLXSharp_$DHTMLXTreeGrid.prototype = {
+		$setContextMenu: function(menu) {
+			this.$_instance.enableContextMenu(menu.get_$instance());
+		},
 		$enableDragDrop: function() {
-			this.$_layout.enableDragAndDrop(true, true);
-			this.$_layout.enableMercyDrag(true);
+			this.$_instance.enableDragAndDrop(true, true);
+			this.$_instance.enableMercyDrag(true);
+		},
+		set_$multipleSelection: function(value) {
+			if (ss.isValue(this.get_$instance())) {
+				this.$_instance.enableMultiselect(value);
+			}
+		},
+		remove_$dragDropHandler: function(value) {
+		},
+		get_$instance: function() {
+			return this.$_instance;
 		}
 	};
 	$DHTMLXSharp_$DHTMLXTreeGrid.$ctor1 = function(parent, url) {
-		this.$_layout = null;
+		this.$_instance = null;
 		//
-		this.$_layout = parent.attachGrid();
-		if (ss.isValue(this.$_layout) && ss.isValue(url)) {
-			this.$_layout.loadXML(url);
+		this.$_instance = parent.attachGrid();
+		if (ss.isValue(this.$_instance) && ss.isValue(url)) {
+			this.$_instance.loadXML(url);
 		}
 	};
-	$DHTMLXSharp_$DHTMLXTreeGrid.$ctor2 = function(parent, settings) {
-		this.$_layout = null;
+	$DHTMLXSharp_$DHTMLXTreeGrid.$ctor2 = function(parent, url) {
+		this.$_instance = null;
 		//
-		this.$_layout = parent.attachGrid();
-		if (ss.isValue(this.$_layout) && ss.isValue(settings)) {
-			this.$_layout.loadXML(settings.content_url);
+		this.$_instance = parent.attachGrid();
+		if (ss.isValue(this.$_instance) && ss.isValue(url)) {
+			this.$_instance.loadXML(url);
 		}
 	};
 	$DHTMLXSharp_$DHTMLXTreeGrid.$ctor1.prototype = $DHTMLXSharp_$DHTMLXTreeGrid.$ctor2.prototype = $DHTMLXSharp_$DHTMLXTreeGrid.prototype;
@@ -332,11 +388,24 @@
 				}
 			}
 			else if (id === 'Tree_Load_Local') {
-				this.$grid.$_layout.load('./data/data.json', 'json');
+				this.$grid.$_instance.load('./data/data.json', 'json');
 			}
 			else if (id === 'Tree_Load_Remote') {
-				this.$grid.$_layout.load('http://localhost:8888/ajax');
+				this.$grid.$_instance.load('http://localhost:8888/ajax');
 			}
+		},
+		$gridDragDropHandler: function(srcID, dstID, srcWidget, dstWidget, srcColumn, dstColumn) {
+			if (ss.referenceEquals(srcWidget, dstWidget)) {
+				console.log('Source is grid');
+			}
+			if (ss.referenceEquals(dstWidget, this.$base_filters.get_$instance())) {
+				console.log('Dest is base filters');
+			}
+			else if (ss.referenceEquals(dstWidget, this.$tree_filters.get_$instance())) {
+				console.log('Dest is tree filters');
+			}
+			//return true;
+			return !ss.referenceEquals(srcWidget, dstWidget);
 		},
 		$onButtonClick: function(window, cell) {
 			window.alert('OnButtonClick');
@@ -353,85 +422,98 @@
 			//
 			this.$layout = new $DHTMLXSharp_$DHTMLXLayout.$ctor1(document.body, 0);
 			// this is transient and obeys C# scoping
-			var main_cell = this.$layout.$_layout.cells('a');
+			var main_cell = this.$layout.$_instance.cells('a');
 			main_cell.hideHeader();
 			//
 			this.$status_bar = new $DHTMLXSharp_$DHTMLXStatusBar(main_cell);
 			this.$status_bar.set_$text('Connected to localhost:8888');
 			this.$tool_bar = new $DHTMLXSharp_$DHTMLXToolBar(main_cell);
-			this.$tool_bar.$_layout.setIconsPath('data/imgs/');
-			this.$tool_bar.$_layout.loadStruct('data/toolbar.xml');
+			this.$tool_bar.$_instance.setIconsPath('data/imgs/');
+			this.$tool_bar.$_instance.loadStruct('data/toolbar.xml');
 			//
 			this.$main_menu = new $DHTMLXSharp_$DHTMLXMenu(main_cell);
 			//
 			if (ss.isValue(this.$main_menu)) {
-				this.$main_menu.$_menu.addNewSibling(null, 'Tree', 'Tree', false);
-				this.$main_menu.$_menu.addNewChild('Tree', 0, 'Tree_Load_Local', 'Load Tree from Assets...', false);
-				this.$main_menu.$_menu.addNewChild('Tree', 1, 'Tree_Load_Remote', 'Load Tree from Server...', false);
-				this.$main_menu.$_menu.addNewSibling(null, 'Form', 'Form', false);
-				this.$main_menu.$_menu.addNewChild('Form', 0, 'Form_Show', 'Show Form...', false);
-				this.$main_menu.$_menu.addNewChild('Form', 1, 'Form_Show_Modal', 'Show Modal Form...', false);
+				this.$main_menu.$_instance.addNewSibling(null, 'Tree', 'Tree', false);
+				this.$main_menu.$_instance.addNewChild('Tree', 0, 'Tree_Load_Local', 'Load Tree from Assets...', false);
+				this.$main_menu.$_instance.addNewChild('Tree', 1, 'Tree_Load_Remote', 'Load Tree from Server...', false);
+				this.$main_menu.$_instance.addNewSibling(null, 'Form', 'Form', false);
+				this.$main_menu.$_instance.addNewChild('Form', 0, 'Form_Show', 'Show Form...', false);
+				this.$main_menu.$_instance.addNewChild('Form', 1, 'Form_Show_Modal', 'Show Modal Form...', false);
 				//			main_menu.Load("data/menu.xml");
 				// menus get built in reverse. imagine push_back ...
-				this.$main_menu.$_menu.addNewSibling(null, 'Server', 'Server', false);
-				this.$main_menu.$_menu.addNewChild('Server', 0, 'Server_Ajax', 'Make AJAX call...', false);
-				this.$main_menu.$_menu.addNewChild('Server', 1, 'Server_JSON', 'To JSON string...', false);
-				this.$main_menu.$_menu.addNewSibling(null, 'file', 'File', false);
-				this.$main_menu.$_menu.addNewChild('file', 0, 'open', 'Open', false);
-				this.$main_menu.$_menu.addNewChild('file', 1, 'new', 'New', false);
-				this.$main_menu.$_menu.addNewChild('file', 2, 'exit', 'Exit', false);
-				this.$main_menu.$_menu.addNewSeparator('new');
-				this.$main_menu.$_menu.attachEvent('onClick', ss.mkdel(this, this.$onMenuClick));
+				this.$main_menu.$_instance.addNewSibling(null, 'Server', 'Server', false);
+				this.$main_menu.$_instance.addNewChild('Server', 0, 'Server_Ajax', 'Make AJAX call...', false);
+				this.$main_menu.$_instance.addNewChild('Server', 1, 'Server_JSON', 'To JSON string...', false);
+				this.$main_menu.$_instance.addNewSibling(null, 'file', 'File', false);
+				this.$main_menu.$_instance.addNewChild('file', 0, 'open', 'Open', false);
+				this.$main_menu.$_instance.addNewChild('file', 1, 'new', 'New', false);
+				this.$main_menu.$_instance.addNewChild('file', 2, 'exit', 'Exit', false);
+				this.$main_menu.$_instance.addNewSeparator('new');
+				this.$main_menu.$_instance.attachEvent('onClick', ss.mkdel(this, this.$onMenuClick));
 			}
 			// set up left hand side
 			var central_panel = new $DHTMLXSharp_$DHTMLXLayout(main_cell, 3);
-			central_panel.$_layout.cells('a').hideHeader();
-			central_panel.$_layout.cells('b').hideHeader();
-			central_panel.$_layout.cells('c').hideHeader();
+			central_panel.$_instance.cells('a').hideHeader();
+			central_panel.$_instance.cells('b').hideHeader();
+			central_panel.$_instance.cells('c').hideHeader();
 			//central_panel.Cells("c").SetText("Drag and drop from Catalog");
-			var cell = central_panel.$_layout.cells('a');
+			var cell = central_panel.$_instance.cells('a');
 			//---------------------------------------------------------------------------
 			// bases tree
-			cell = central_panel.$_layout.cells('a');
-			var settings = $DHTMLXSharp_DHTMLXTreeGridSettings.$ctor();
-			settings.content_url = 'data/filter_bases.xml';
-			this.$base_filters = new $DHTMLXSharp_$DHTMLXTreeGrid(cell, settings);
+			cell = central_panel.$_instance.cells('a');
+			this.$base_filters = new $DHTMLXSharp_$DHTMLXTreeGrid.$ctor1(cell, 'data/filter_bases.xml');
 			this.$base_filters.$enableDragDrop();
+			this.$base_filters.set_$multipleSelection(true);
+			this.$base_filters.$_instance.attachEvent('onDrag', ss.mkdel(this, this.$gridDragDropHandler));
+			// base tree context menu
+			var menu = new $DHTMLXSharp_$DHTMLXContextMenu('data/imgs/');
+			menu.$_instance.loadStruct('data/context_edit_menu.xml');
+			this.$base_filters.$setContextMenu(menu);
 			//---------------------------------------------------------------------------
-			// Right-hand panel contains catalog/results/charts
-			cell = central_panel.$_layout.cells('b');
-			var right_panel = new $DHTMLXSharp_$DHTMLXLayout(cell, 0);
-			var tabbar = new $DHTMLXSharp_$DHTMLXTabBar(right_panel.$_layout.cells('a'));
-			tabbar.$_layout.addTab('Catalog', 'Catalog', 100);
-			tabbar.$_layout.addTab('Results', 'Results', 100);
-			tabbar.$_layout.addTab('Charts', 'Charts', 100);
-			tabbar.$_layout.cells('Catalog').setActive();
-			//---------------------------------------------------------------------------
-			// Create the variable catalog
-			var tab = tabbar.$_layout.cells('Catalog');
-			var catalog_settings = $DHTMLXSharp_DHTMLXTreeGridSettings.$ctor();
-			catalog_settings.content_url = 'data/catalog.xml';
-			var catalog = new $DHTMLXSharp_$DHTMLXTreeGrid.$ctor2(tab, catalog_settings);
-			catalog.$enableDragDrop();
-			//---------------------------------------------------------------------------
-			// filter treee
-			cell = central_panel.$_layout.cells('c');
+			// filter tree
+			cell = central_panel.$_instance.cells('c');
 			this.$tree_filters = new $DHTMLXSharp_$DHTMLXTreeGrid.$ctor1(cell, 'data/tree_filter.xml');
 			this.$tree_filters.$enableDragDrop();
+			this.$tree_filters.set_$multipleSelection(true);
+			this.$tree_filters.$_instance.attachEvent('onDrag', ss.mkdel(this, this.$gridDragDropHandler));
+			// filter tree context menu
+			var ctx_tree_filters = new $DHTMLXSharp_$DHTMLXContextMenu('data/imgs/');
+			ctx_tree_filters.$_instance.loadStruct('data/context_edit_menu.xml');
+			this.$tree_filters.$setContextMenu(ctx_tree_filters);
 			//---------------------------------------------------------------------------
-			tab = tabbar.$_layout.cells('Results');
+			// Right-hand panel contains catalog/results/charts
+			cell = central_panel.$_instance.cells('b');
+			var right_panel = new $DHTMLXSharp_$DHTMLXLayout(cell, 0);
+			var tabbar = new $DHTMLXSharp_$DHTMLXTabBar(right_panel.$_instance.cells('a'));
+			tabbar.$_instance.addTab('Catalog', 'Catalog', 100);
+			tabbar.$_instance.addTab('Results', 'Results', 100);
+			tabbar.$_instance.addTab('Charts', 'Charts', 100);
+			tabbar.$_instance.cells('Catalog').setActive();
+			//---------------------------------------------------------------------------
+			// Create the variable catalog
+			var tab = tabbar.$_instance.cells('Catalog');
+			var catalog = new $DHTMLXSharp_$DHTMLXTreeGrid.$ctor2(tab, 'data/catalog.xml');
+			catalog.$enableDragDrop();
+			catalog.set_$multipleSelection(true);
+			// base tree context menu
+			var ctx_catalog = new $DHTMLXSharp_$DHTMLXContextMenu('data/imgs/');
+			ctx_catalog.$_instance.loadStruct('data/menu_ctx_catalog.xml');
+			catalog.$setContextMenu(ctx_catalog);
+			//---------------------------------------------------------------------------
+			tab = tabbar.$_instance.cells('Results');
 			this.$grid = new $DHTMLXSharp_$DHTMLXGrid.$ctor1(tab);
 			if (ss.isValue(this.$grid)) {
 				this.$grid.$enableDragDrop();
-				this.$grid.$_layout.setHeader('Text,Filter1,Filter2,Filter3');
-				this.$grid.$_layout.setInitWidths('100,80,80,80');
-				this.$grid.$_layout.init();
-				this.$grid.$_layout.addRow(0, 'Row 0', 0);
-				this.$grid.$_layout.addRow(1, 'Row 1', 1);
-				this.$grid.$_layout.addRow(2, 'Row 2', 2);
-				this.$grid.$_layout.addRow(3, 'Row 4', 3);
-				this.$grid.$_layout.addRow(4, 'Row 5', 4);
-				this.$grid.$_layout.addRow(5, 'Row 6', 5);
+				this.$grid.$_instance.setHeader('Text,Filter1,Filter2,Filter3');
+				this.$grid.$_instance.setInitWidths('100,80,80,80');
+				this.$grid.$_instance.init();
+				this.$grid.$_instance.addRow(0, 'Row 0', 0);
+				this.$grid.$_instance.addRow(1, 'Row 1', 1);
+				this.$grid.$_instance.addRow(2, 'Row 2', 2);
+				this.$grid.$_instance.addRow(3, 'Row 4', 3);
+				this.$grid.$_instance.addRow(4, 'Row 5', 4);
+				this.$grid.$_instance.addRow(5, 'Row 6', 5);
 			}
 			//---------------------------------------------------------------------------
 			var flayout = Mapper['formLayout'];
@@ -443,7 +525,7 @@
 			this.$win.set_$visible(false);
 			this.$win.set_$text('Popup Window with embedded form');
 			this.$win.add_$onClick(ss.mkdel(this, this.$onButtonClicked));
-			this.$win.$showModal();
+			//		win.ShowModal();
 			// do some AJAxing at startup
 			var opts = { url: 'http://localhost:8888/data/form1.json', dataType: 'json', async: true };
 			// make the request
@@ -472,6 +554,8 @@
 		return $this;
 	};
 	ss.registerClass(null, 'DHTMLXSharp.$DHTMLXCell', $DHTMLXSharp_$DHTMLXCell);
+	ss.registerClass(null, 'DHTMLXSharp.$DHTMLXCombo', $DHTMLXSharp_$DHTMLXCombo);
+	ss.registerClass(null, 'DHTMLXSharp.$DHTMLXContextMenu', $DHTMLXSharp_$DHTMLXContextMenu);
 	ss.registerClass(null, 'DHTMLXSharp.$DHTMLXGrid', $DHTMLXSharp_$DHTMLXGrid);
 	ss.registerClass(null, 'DHTMLXSharp.$DHTMLXLayout', $DHTMLXSharp_$DHTMLXLayout);
 	ss.registerClass(null, 'DHTMLXSharp.$DHTMLXMenu', $DHTMLXSharp_$DHTMLXMenu);

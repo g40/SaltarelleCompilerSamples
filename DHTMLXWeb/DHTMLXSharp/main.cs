@@ -207,6 +207,25 @@ public class main
 	///
 
 	///
+	private bool GridDragDropHandler(object srcID, object dstID, object srcWidget, object dstWidget, object srcColumn, object dstColumn)
+	{
+		if (srcWidget == dstWidget)
+		{
+			NativeCode.Log("Source is grid");
+		}
+		if (dstWidget == base_filters.Instance)
+		{
+			NativeCode.Log("Dest is base filters");
+		}
+		else if (dstWidget == tree_filters.Instance)
+		{
+			NativeCode.Log("Dest is tree filters");
+		}
+		//return true;
+		return !(srcWidget == dstWidget);
+	}
+
+	///
 	private void OnButtonClick(object window, object cell)
 	{
 		Window.Alert("OnButtonClick");
@@ -290,10 +309,28 @@ public class main
 		//---------------------------------------------------------------------------
 		// bases tree
 		cell = central_panel.Cells("a");
-		DHTMLXTreeGridSettings settings = new DHTMLXTreeGridSettings();
-		settings.content_url = "data/filter_bases.xml";
-		base_filters = new DHTMLXTreeGrid(cell, settings);
+		base_filters = new DHTMLXTreeGrid(cell, "data/filter_bases.xml");
 		base_filters.EnableDragDrop();
+		base_filters.MultipleSelection = true;
+		base_filters.DragDropHandler += GridDragDropHandler;
+
+		// base tree context menu
+		DHTMLXContextMenu menu = new DHTMLXContextMenu("data/imgs/");
+		menu.Load("data/context_edit_menu.xml");
+		base_filters.SetContextMenu(menu);
+
+		//---------------------------------------------------------------------------
+		// filter tree
+		cell = central_panel.Cells("c");
+		tree_filters = new DHTMLXTreeGrid(cell, "data/tree_filter.xml");
+		tree_filters.EnableDragDrop();
+		tree_filters.MultipleSelection = true;
+		tree_filters.DragDropHandler += GridDragDropHandler;
+
+		// filter tree context menu
+		DHTMLXContextMenu ctx_tree_filters = new DHTMLXContextMenu("data/imgs/");
+		ctx_tree_filters.Load("data/context_edit_menu.xml");
+		tree_filters.SetContextMenu(ctx_tree_filters);
 
 		//---------------------------------------------------------------------------
 		// Right-hand panel contains catalog/results/charts
@@ -309,15 +346,14 @@ public class main
 		// Create the variable catalog
 		DHTMLXTab tab = tabbar.Tabs("Catalog");
 		
-		DHTMLXTreeGridSettings catalog_settings = new DHTMLXTreeGridSettings();
-		catalog_settings.content_url = "data/catalog.xml";
-		DHTMLXTreeGrid catalog = new DHTMLXTreeGrid(tab, catalog_settings);
+		DHTMLXTreeGrid catalog = new DHTMLXTreeGrid(tab, "data/catalog.xml");
 		catalog.EnableDragDrop();
-		//---------------------------------------------------------------------------
-		// filter treee
-		cell = central_panel.Cells("c");
-		tree_filters = new DHTMLXTreeGrid(cell, "data/tree_filter.xml");
-		tree_filters.EnableDragDrop();
+		catalog.MultipleSelection = true;
+
+		// base tree context menu
+		DHTMLXContextMenu ctx_catalog = new DHTMLXContextMenu("data/imgs/");
+		ctx_catalog.Load("data/menu_ctx_catalog.xml");
+		catalog.SetContextMenu(ctx_catalog);
 
 		//---------------------------------------------------------------------------
 		tab = tabbar.Tabs("Results");
@@ -347,7 +383,7 @@ public class main
 		win.Visible = false;
 		win.Text = "Popup Window with embedded form";
 		win.OnClick += OnButtonClicked;
-		win.ShowModal();
+//		win.ShowModal();
 
 		// do some AJAxing at startup
 		jQueryAjaxOptions opts = new jQueryAjaxOptions { Url = "http://localhost:8888/data/form1.json", DataType = "json", Async = true };

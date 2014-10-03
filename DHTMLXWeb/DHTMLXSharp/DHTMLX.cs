@@ -39,7 +39,7 @@ namespace DHTMLXSharp
 		/// <summary>
 		/// The widget instance
 		/// </summary>
-		object _layout = null;
+		object _instance = null;
 
 		/// <summary>
 		/// 
@@ -53,7 +53,7 @@ namespace DHTMLXSharp
 		/// 
 		/// </summary>
 		/// <param name="arg"></param>
-		[InlineCode("{this}.$_layout.setText({arg})")]
+		[InlineCode("{this}.$_instance.setText({arg})")]
 		void _text(String arg) { }
 
 		/// <summary>
@@ -73,7 +73,7 @@ namespace DHTMLXSharp
 		/// <param name="parent"></param>
 		public DHTMLXStatusBar(DHTMLXCell parent)
 		{
-			_layout = _Attach(parent);
+			_instance = _Attach(parent);
 		}
 	}
 
@@ -85,7 +85,7 @@ namespace DHTMLXSharp
 		/// <summary>
 		/// The widget instance
 		/// </summary>
-		object _layout = null;
+		object _instance = null;
 
 		/// <summary>
 		/// 
@@ -95,10 +95,10 @@ namespace DHTMLXSharp
 		[InlineCode("{parent}.attachToolbar()")]
 		object _Attach(DHTMLXCell parent) { return null; }
 
-		[InlineCode("{this}.$_layout.setIconsPath({arg})")]
+		[InlineCode("{this}.$_instance.setIconsPath({arg})")]
 		public void SetIconPath(String arg) { }
 
-		[InlineCode("{this}.$_layout.loadStruct({arg})")]
+		[InlineCode("{this}.$_instance.loadStruct({arg})")]
 		public void LoadXML(String arg) { }
 		/// <summary>
 		/// 
@@ -106,7 +106,7 @@ namespace DHTMLXSharp
 		/// <param name="parent"></param>
 		public DHTMLXToolBar(DHTMLXCell parent)
 		{
-			_layout = _Attach(parent);
+			_instance = _Attach(parent);
 		}
 
 	}
@@ -142,7 +142,7 @@ namespace DHTMLXSharp
 		/// <summary>
 		/// The widget instance
 		/// </summary>
-		object _layout = null;
+		object _instance = null;
 
 		/// <summary>
 		/// 
@@ -158,17 +158,17 @@ namespace DHTMLXSharp
 		/// <param name="id"></param>
 		/// <param name="text"></param>
 		/// <param name="Width"></param>
-		[InlineCode("{this}.$_layout.addTab({id},{text},{width})")]
+		[InlineCode("{this}.$_instance.addTab({id},{text},{width})")]
 		public void AddTab(String id, String text, int width) { }
 
-		[InlineCode("{this}.$_layout.cells({id}).setActive()")]
+		[InlineCode("{this}.$_instance.cells({id}).setActive()")]
 		public void Activate(String id) { }
 		/// <summary>
 		/// 
 		/// </summary>
 		/// <param name="id"></param>
 		/// <returns></returns>
-		[InlineCode("{this}.$_layout.cells({id})")]
+		[InlineCode("{this}.$_instance.cells({id})")]
 		public DHTMLXTab Tabs(String id) { return null; }
 
 		/// <summary>
@@ -177,7 +177,7 @@ namespace DHTMLXSharp
 		/// <param name="parent"></param>
 		public DHTMLXTabBar(DHTMLXCell parent)
 		{
-			_layout = _Attach(parent);
+			_instance = _Attach(parent);
 		}
 
 	}
@@ -190,7 +190,7 @@ namespace DHTMLXSharp
 		/// <summary>
 		/// The widget instance
 		/// </summary>
-		object _layout = null;
+		object _instance = null;
 
 		/// <summary>
 		/// 
@@ -206,7 +206,7 @@ namespace DHTMLXSharp
 		/// <param name="parent"></param>
 		public DHTMLXGrid(DHTMLXCell parent)
 		{
-			_layout = _Attach(parent);
+			_instance = _Attach(parent);
 		}
 
 		/// <summary>
@@ -215,32 +215,70 @@ namespace DHTMLXSharp
 		/// <param name="parent"></param>
 		public DHTMLXGrid(DHTMLXTab parent)
 		{
-			_layout = _Attach(parent);
+			_instance = _Attach(parent);
 		}
 
-		[InlineCode("{this}.$_layout.enableDragAndDrop(true,true)")]
+		[InlineCode("{this}.$_instance.enableDragAndDrop(true,true)")]
 		void _EnableDragDrop() { }
 
-		[InlineCode("{this}.$_layout.enableMercyDrag(true)")]
+		[InlineCode("{this}.$_instance.enableMercyDrag(true)")]
 		void _EnableDragDropCopy() { }
 
+		/// <summary>
+		/// 
+		/// </summary>
 		public void EnableDragDrop()
 		{
 			_EnableDragDrop();
 			_EnableDragDropCopy();
-		}	
+		}
 
-		[InlineCode("{this}.$_layout.setHeader({titles})")]
+		[InlineCode("{this}.$_instance.enableMultiselect({arg})")]
+		void _EnableMultipleSelection(bool arg) { }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		public bool EnableMultipleSelection
+		{
+			set
+			{
+				if (Instance != null)
+				{
+					_EnableMultipleSelection(value);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Wire up drag/drop events
+		/// </summary>
+		/// <param name="srcID"></param>
+		/// <param name="dstID"></param>
+		/// <param name="srcWidget"></param>
+		/// <param name="dstWidget"></param>
+		/// <param name="srcColumn"></param>
+		/// <param name="dstColumn"></param>
+		delegate bool _GridDragDropHandler(object srcID,object dstID,object srcWidget,object dstWidget,object srcColumn,object dstColumn);
+
+		event _GridDragDropHandler _DragDropHandler
+		{
+			[InlineCode("{this}.$_instance.attachEvent('onDrag',{value})")]
+			add { }
+			remove { }
+		}
+
+		[InlineCode("{this}.$_instance.setHeader({titles})")]
 		public void SetColumnTitles(String titles) { }
 
-		[InlineCode("{this}.$_layout.setInitWidths({widths})")]
+		[InlineCode("{this}.$_instance.setInitWidths({widths})")]
 		public void SetColumnWidths(String widths) { }
 
-		[InlineCode("{this}.$_layout.init()")]
+		[InlineCode("{this}.$_instance.init()")]
 		public void Init() { }
 
 		//[InlineCode("{this}.addRowAfter({new_id},{text},{sibling_id},{img},{isChild})")]
-		[InlineCode("{this}.$_layout.addRow({new_id},{text},{index})")]
+		[InlineCode("{this}.$_instance.addRow({new_id},{text},{index})")]
 		public void AddRow(int new_id, string text, int index) { }
 
 		//-------------------------------------------------
@@ -248,21 +286,42 @@ namespace DHTMLXSharp
 		/// Load content from an XML file
 		/// </summary>
 		/// <param name="xml_path"></param>
-		[InlineCode("{this}.$_layout.loadXML({xml_path})")]
+		[InlineCode("{this}.$_instance.loadXML({xml_path})")]
 		public void LoadXML(String xml_path) { }
 
 		/// <summary>
 		/// 
 		/// </summary>
 		/// <param name="json_path"></param>
-		[InlineCode("{this}.$_layout.load({json_path},\"json\")")]
+		[InlineCode("{this}.$_instance.load({json_path},\"json\")")]
 		public void LoadJSON(String json_path) { }
 
-		[InlineCode("{this}.$_layout.load({uri})")]
+		[InlineCode("{this}.$_instance.load({uri})")]
 		public void LoadURI(String uri) { }
 
-		/// events
-		public delegate void EventHandlerType(String id, String zoneId, object caState);
+		//
+		[InlineCode("{this}.$_instance.enableContextMenu({menu})")]
+		void _SetContextMenu(object menu) { }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="menu"></param>
+		public void SetContextMenu(DHTMLXContextMenu menu)
+		{
+			_SetContextMenu(menu.Instance);
+		}
+
+		/// <summary>
+		/// For those times we need the underlying JS object
+		/// </summary>
+		public object Instance
+		{
+			get
+			{
+				return _instance;
+			}
+		}
 	}
 
 	/// <summary>
@@ -304,36 +363,83 @@ namespace DHTMLXSharp
 		/// <summary>
 		/// The widget instance
 		/// </summary>
-		object _layout = null;
+		object _instance = null;
 
-		[InlineCode("{this}.$_layout.setHeader({titles})")]
+		[InlineCode("{this}.$_instance.setHeader({titles})")]
 		public void SetColumnTitles(String titles) { }
 
-		[InlineCode("{this}.$_layout.setInitWidths({widths})")]
+		[InlineCode("{this}.$_instance.setInitWidths({widths})")]
 		public void SetColumnWidths(String widths) { }
 
-		[InlineCode("{this}.$_layout.setColTypes({arg})")]
+		[InlineCode("{this}.$_instance.setColTypes({arg})")]
 		public void SetColumnTypes(String arg) { }
 
-		[InlineCode("{this}.$_layout.init()")]
+		[InlineCode("{this}.$_instance.init()")]
 		public void Init() { }
 
-		[InlineCode("{this}.$_layout.load({json_path},\"json\")")]
+		[InlineCode("{this}.$_instance.load({json_path},\"json\")")]
 		public void LoadJSON(String json_path) { }
 
-		[InlineCode("{this}.$_layout.loadXML({xml_path})")]
+		[InlineCode("{this}.$_instance.loadXML({xml_path})")]
 		public void LoadXML(String xml_path) { }
 
-		[InlineCode("{this}.$_layout.enableDragAndDrop(true,true)")]
+		//
+		[InlineCode("{this}.$_instance.enableContextMenu({menu})")]
+		void _SetContextMenu(object menu) { }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="menu"></param>
+		public void SetContextMenu(DHTMLXContextMenu menu)
+		{
+			_SetContextMenu(menu.Instance);
+		}
+
+		[InlineCode("{this}.$_instance.enableDragAndDrop(true,true)")]
 		void _EnableDragDrop() { }
 
-		[InlineCode("{this}.$_layout.enableMercyDrag(true)")]
+		[InlineCode("{this}.$_instance.enableMercyDrag(true)")]
 		void _EnableDragDropCopy() { }
+
+		[InlineCode("{this}.$_instance.enableMultiselect({arg})")]
+		void _EnableMultipleSelection(bool arg) { }
 
 		public void EnableDragDrop()
 		{
 			_EnableDragDrop();
 			_EnableDragDropCopy();
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		public bool MultipleSelection
+		{
+			set
+			{
+				if (Instance != null)
+				{
+					_EnableMultipleSelection(value);
+				}
+			}
+		}
+		/// <summary>
+		/// Wire up drag/drop events
+		/// </summary>
+		/// <param name="srcID"></param>
+		/// <param name="dstID"></param>
+		/// <param name="srcWidget"></param>
+		/// <param name="dstWidget"></param>
+		/// <param name="srcColumn"></param>
+		/// <param name="dstColumn"></param>
+		public delegate bool GridDragDropHandler(object srcID, object dstID, object srcWidget, object dstWidget, object srcColumn, object dstColumn);
+
+		public event GridDragDropHandler DragDropHandler
+		{
+			[InlineCode("{this}.$_instance.attachEvent('onDrag',{value})")]
+			add { }
+			remove { }
 		}
 
 		/// <summary>
@@ -352,8 +458,8 @@ namespace DHTMLXSharp
 		public DHTMLXTreeGrid(DHTMLXCell parent,DHTMLXTreeGridSettings settings)
 		{
 			//
-			_layout = _Attach(parent);
-			if (_layout != null && settings != null)
+			_instance = _Attach(parent);
+			if (_instance != null && settings != null)
 			{
 				LoadXML(settings.content_url);
 			}
@@ -367,8 +473,8 @@ namespace DHTMLXSharp
 		public DHTMLXTreeGrid(DHTMLXCell parent,String url)
 		{
 			//
-			_layout = _Attach(parent);
-			if (_layout != null && url != null)
+			_instance = _Attach(parent);
+			if (_instance != null && url != null)
 			{
 				LoadXML(url);
 			}
@@ -378,13 +484,54 @@ namespace DHTMLXSharp
 		/// 
 		/// </summary>
 		/// <param name="parent"></param>
-		public DHTMLXTreeGrid(DHTMLXTab parent, DHTMLXTreeGridSettings settings)
+		public DHTMLXTreeGrid(DHTMLXTab parent,String url)
 		{
 			//
-			_layout = _Attach(parent);
-			if (_layout != null && settings != null)
+			_instance = _Attach(parent);
+			if (_instance != null && url != null)
 			{
-				LoadXML(settings.content_url);
+				LoadXML(url);
+			}
+		}
+
+		/// <summary>
+		/// For those times we need the underlying JS object
+		/// </summary>
+		public object Instance
+		{
+			get
+			{
+				return _instance;
+			}
+		}
+	}
+
+	/// <summary>
+	/// Light-weight object.
+	/// </summary>
+	class DHTMLXCombo
+	{
+		/// <summary>
+		/// 
+		/// </summary>
+		private object _instance = null;
+
+		/// <summary>
+		/// 
+		/// </summary>
+		public DHTMLXCombo()
+		{
+
+		}
+		
+		/// <summary>
+		/// For those times we need the underlying JS object
+		/// </summary>
+		public object Instance
+		{
+			get
+			{
+				return _instance;
 			}
 		}
 	}
@@ -395,7 +542,7 @@ namespace DHTMLXSharp
 	class DHTMLXLayout
 	{
 		// the native instance
-		object _layout = null;
+		object _instance = null;
 
 		/// <summary>
 		/// 
@@ -459,10 +606,10 @@ namespace DHTMLXSharp
 				formats.Add(Format.e3U, "3U");
 			}
 			formats.TryGetValue(format,out formatString);
-			_layout = _Attach(parent, formatString);
+			_instance = _Attach(parent, formatString);
 		}
 
-		[InlineCode("{this}.$_layout.cells({id})")]
+		[InlineCode("{this}.$_instance.cells({id})")]
 		public DHTMLXCell Cells(string id) { return null; }
 	}
 
@@ -743,7 +890,7 @@ namespace DHTMLXSharp
 	/// </summary>
 	class DHTMLXMenu
 	{
-		object _menu = null;
+		object _instance = null;
 		/// <summary>
 		/// typedef an event handler
 		/// </summary>
@@ -754,7 +901,7 @@ namespace DHTMLXSharp
 		/// </summary>
 		public event EventHandlerType OnClick
 		{
-			[InlineCode("{this}.$_menu.attachEvent('onClick',{value})")]
+			[InlineCode("{this}.$_instance.attachEvent('onClick',{value})")]
 			add { }
 			remove { }
 		}
@@ -768,17 +915,17 @@ namespace DHTMLXSharp
 		/// <param name="parent"></param>
 		public DHTMLXMenu(DHTMLXCell parent)
 		{
-			_menu = _Attach(parent);
+			_instance = _Attach(parent);
 		}
 
 		/// <summary>
 		/// Add a separator
 		/// </summary>
 		/// <param name="id"></param>
-		[InlineCode("{this}.$_menu.addNewSeparator({id})")]
+		[InlineCode("{this}.$_instance.addNewSeparator({id})")]
 		public void AddSeparator(String id) {}
 
-		[InlineCode("{this}.$_menu.addNewSibling({parentId}, {id}, {caption}, {enabled})")]
+		[InlineCode("{this}.$_instance.addNewSibling({parentId}, {id}, {caption}, {enabled})")]
 		public void AddMenu(String parentId, String id, String caption, bool enabled) {}
 
 		/// <summary>
@@ -789,29 +936,98 @@ namespace DHTMLXSharp
 		/// <param name="id">this menu items ID</param>
 		/// <param name="text">Menu text</param>
 		/// <param name="enabled">enabled or not</param>
-		[InlineCode("{this}.$_menu.addNewChild({parentId},{position},{id},{text},{enabled})")]
+		[InlineCode("{this}.$_instance.addNewChild({parentId},{position},{id},{text},{enabled})")]
 		public void AddMenuItem(String parentId, int position, String id, string text, bool enabled) { }
 
 		/// <summary>
 		/// Enable the menu
 		/// </summary>
 		/// <param name="menuId"></param>
-		[InlineCode("{this}.$_menu.setItemEnabled({menuId})")]
+		[InlineCode("{this}.$_instance.setItemEnabled({menuId})")]
 		public void EnableMenu(String menuId) {}
 
 		/// <summary>
 		/// Disable the menu
 		/// </summary>
 		/// <param name="menuId"></param>
-		[InlineCode("{this}.$_menu.setItemDisabled({menuId})")]
+		[InlineCode("{this}.$_instance.setItemDisabled({menuId})")]
 		public void DisableMenu(String menuId) {}
 
 		/// <summary>
 		/// Load a menu from an XML or other definition
 		/// </summary>
 		/// <param name="menuDefinition"></param>
-		[InlineCode("{this}.$_menu.loadStruct({menuDefinition})")]
+		[InlineCode("{this}.$_instance.loadStruct({menuDefinition})")]
 		public void Load(string menuDefinition) {}
+
+		/// <summary>
+		/// For those times we need the underlying JS object
+		/// </summary>
+		public object Instance
+		{
+			get
+			{
+				return _instance;
+			}
+		}
+	}
+
+		/// <summary>
+	/// Menus
+	/// </summary>
+	class DHTMLXContextMenu
+	{
+		object _instance = null;
+		/// <summary>
+		/// typedef an event handler
+		/// </summary>
+		public delegate void ClickHandlerType(String id);
+
+		/// <summary>
+		/// OnClick += Function with EventHandlerType signature
+		/// </summary>
+		public event ClickHandlerType OnClick
+		{
+			[InlineCode("{this}.$_instance.attachEvent('onClick',{value})")]
+			add { }
+			remove { }
+		}
+
+		[InlineCode("new dhtmlXMenuObject()")]
+		object _Attach() { return null; }
+
+		[InlineCode("this.$_instance.renderAsContextMenu()")]
+		void _Render() { }
+
+		[InlineCode("this.$_instance.setIconsPath({url})")]
+		/*public*/ void _SetIconPath(String url) { }
+
+		[InlineCode("{this}.$_instance.loadStruct({menuDefinition})")]
+		public void Load(string menuDefinition) { }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="parent"></param>
+		public DHTMLXContextMenu(String iconURL)
+		{
+			_instance = _Attach();
+			if (_instance != null)
+			{
+				_SetIconPath(iconURL);
+				_Render();
+			}
+		}
+		/// <summary>
+		/// For those times we need the underlying JS object
+		/// </summary>
+		public object Instance
+		{
+			get
+			{
+				return _instance;
+			}
+		}
 	}
 
 	/// <summary>

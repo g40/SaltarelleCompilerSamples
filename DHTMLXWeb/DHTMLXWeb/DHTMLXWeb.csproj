@@ -69,6 +69,7 @@
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="content\" />
     <Folder Include="support\" />
   </ItemGroup>
   <PropertyGroup>
