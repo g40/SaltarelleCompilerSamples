@@ -8,6 +8,34 @@ using jQueryApi;
 namespace DHTMLXSharp
 {
 	/// <summary>
+	/// Extremely thin wrapper around cell object
+	/// </summary>
+	class DHTMLXGridCell
+	{
+		/// <summary>
+		/// Set textual value
+		/// </summary>
+		/// <param name="value"></param>
+		[InlineCode("{this}.setValue({value})")]
+		public void setValue(String value) { }
+
+		/// <summary>
+		/// Get textual value
+		/// </summary>
+		/// <returns></returns>
+		[InlineCode("{this}.getValue({})")]
+		public String getValue() { return null; }
+
+		/// <summary>
+		/// Constructor must take 
+		/// </summary>
+		/// <param name="obj"></param>
+		public DHTMLXGridCell(object obj)
+		{
+		}
+	}
+
+	/// <summary>
 	/// 
 	/// </summary>
 	class DHTMLXCell
@@ -313,6 +341,15 @@ namespace DHTMLXSharp
 		}
 
 		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="row_id"></param>
+		/// <param name="column"></param>
+		/// <returns></returns>
+		[InlineCode("{this}.$_instance.cells({row_id},{column})")]
+		public DHTMLXGridCell Cells(String row_id, int column) { return null; }
+
+		/// <summary>
 		/// For those times we need the underlying JS object
 		/// </summary>
 		public object Instance
@@ -424,6 +461,8 @@ namespace DHTMLXSharp
 				}
 			}
 		}
+
+
 		/// <summary>
 		/// Wire up drag/drop events
 		/// </summary>
@@ -433,14 +472,50 @@ namespace DHTMLXSharp
 		/// <param name="dstWidget"></param>
 		/// <param name="srcColumn"></param>
 		/// <param name="dstColumn"></param>
-		public delegate bool GridDragDropHandler(object srcID, object dstID, object srcWidget, object dstWidget, object srcColumn, object dstColumn);
+		delegate bool _DragDropHandlerType(object srcID, object dstID, object srcWidget, object dstWidget, object srcColumn, object dstColumn);
 
-		public event GridDragDropHandler DragDropHandler
+		/// <summary>
+		/// Internal handler 
+		/// </summary>
+		event _DragDropHandlerType _DragDropHandler
 		{
 			[InlineCode("{this}.$_instance.attachEvent('onDrag',{value})")]
 			add { }
 			remove { }
 		}
+
+		/// <summary>
+		/// This handler does tpye conversion and forwards to proper delegate
+		/// </summary>
+		/// <param name="sID"></param>
+		/// <param name="dID"></param>
+		/// <param name="srcWidget"></param>
+		/// <param name="dstWidget"></param>
+		/// <param name="sColumn"></param>
+		/// <param name="dColumn"></param>
+		/// <returns></returns>
+		private bool _ForwardDragDropHandler(object sID, object dID, object srcWidget, object dstWidget, object sColumn, object dColumn)
+		{
+			bool ret = true;
+			if (OnDragDrop != null && 
+				sID != null && 
+				dID != null && 
+				sColumn != null && 
+				dColumn != null)
+			{
+				String srcID = sID as String;
+				String[] srcIDs = srcID.Split(',');
+				String dstID = dID as String;
+				int srcColumn = (int) sColumn;
+				int dstColumn = (int) dColumn;
+				ret = OnDragDrop(srcIDs, dstID, srcWidget, dstWidget, srcColumn, dstColumn);
+			}
+			return ret;
+		}
+
+		public delegate bool DragDropHandlerType(String[] srcIDs, String dstID, object srcWidget, object dstWidget, int srcColumn, int dstColumn);
+
+		public event DragDropHandlerType OnDragDrop;
 
 		/// <summary>
 		/// 
@@ -463,6 +538,8 @@ namespace DHTMLXSharp
 			{
 				LoadXML(settings.content_url);
 			}
+			//
+			_DragDropHandler += _ForwardDragDropHandler;
 		}
 
 		/// <summary>
@@ -478,6 +555,8 @@ namespace DHTMLXSharp
 			{
 				LoadXML(url);
 			}
+			//
+			_DragDropHandler += _ForwardDragDropHandler;
 		}
 
 		/// <summary>
@@ -492,7 +571,18 @@ namespace DHTMLXSharp
 			{
 				LoadXML(url);
 			}
+			//
+			_DragDropHandler += _ForwardDragDropHandler;
 		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="row_id"></param>
+		/// <param name="column"></param>
+		/// <returns></returns>
+		[InlineCode("{this}.$_instance.cells({row_id},{column})")]
+		public DHTMLXGridCell Cells(String row_id,int column) { return null; }
 
 		/// <summary>
 		/// For those times we need the underlying JS object

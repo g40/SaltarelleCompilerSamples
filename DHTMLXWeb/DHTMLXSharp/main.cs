@@ -164,11 +164,11 @@ public class main
 		}
 		else if (id == "Tree_Load_Local")
 		{
-			grid.LoadJSON("./data/data.json");
+			grid_results.LoadJSON("./data/data.json");
 		}
 		else if (id == "Tree_Load_Remote")
 		{
-			grid.LoadURI("http://localhost:8888/ajax");
+			grid_results.LoadURI("http://localhost:8888/ajax");
 		}
 	}
 
@@ -190,8 +190,13 @@ public class main
 	/// The main application menu
 	/// </summary>
 	DHTMLXMenu main_menu = null;
+
 	//
-	DHTMLXGrid grid = null;
+	DHTMLXTreeGrid catalog = null;
+
+	//
+	DHTMLXGrid grid_results = null;
+
 	//
 	DHTMLXTreeGrid base_filters = null;
 	DHTMLXTreeGrid tree_filters = null;
@@ -207,7 +212,7 @@ public class main
 	///
 
 	///
-	private bool GridDragDropHandler(object srcID, object dstID, object srcWidget, object dstWidget, object srcColumn, object dstColumn)
+	private bool GridDragDropHandler(String[] srcIDs, String dstID, object srcWidget, object dstWidget, int srcColumn, int dstColumn)
 	{
 		if (srcWidget == dstWidget)
 		{
@@ -225,7 +230,11 @@ public class main
 		return !(srcWidget == dstWidget);
 	}
 
-	///
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="window"></param>
+	/// <param name="cell"></param>
 	private void OnButtonClick(object window, object cell)
 	{
 		Window.Alert("OnButtonClick");
@@ -312,7 +321,7 @@ public class main
 		base_filters = new DHTMLXTreeGrid(cell, "data/filter_bases.xml");
 		base_filters.EnableDragDrop();
 		base_filters.MultipleSelection = true;
-		base_filters.DragDropHandler += GridDragDropHandler;
+		base_filters.OnDragDrop += GridDragDropHandler;
 
 		// base tree context menu
 		DHTMLXContextMenu menu = new DHTMLXContextMenu("data/imgs/");
@@ -325,7 +334,7 @@ public class main
 		tree_filters = new DHTMLXTreeGrid(cell, "data/tree_filter.xml");
 		tree_filters.EnableDragDrop();
 		tree_filters.MultipleSelection = true;
-		tree_filters.DragDropHandler += GridDragDropHandler;
+		tree_filters.OnDragDrop += FilterTreeDragDropHandler;
 
 		// filter tree context menu
 		DHTMLXContextMenu ctx_tree_filters = new DHTMLXContextMenu("data/imgs/");
@@ -346,7 +355,7 @@ public class main
 		// Create the variable catalog
 		DHTMLXTab tab = tabbar.Tabs("Catalog");
 		
-		DHTMLXTreeGrid catalog = new DHTMLXTreeGrid(tab, "data/catalog.xml");
+		catalog = new DHTMLXTreeGrid(tab, "data/catalog.xml");
 		catalog.EnableDragDrop();
 		catalog.MultipleSelection = true;
 
@@ -357,19 +366,19 @@ public class main
 
 		//---------------------------------------------------------------------------
 		tab = tabbar.Tabs("Results");
-		grid = new DHTMLXGrid(tab);
-		if (grid != null)
+		grid_results = new DHTMLXGrid(tab);
+		if (grid_results != null)
 		{
-			grid.EnableDragDrop();
-			grid.SetColumnTitles("Text,Filter1,Filter2,Filter3");
-			grid.SetColumnWidths("100,80,80,80");
-			grid.Init();
-			grid.AddRow(0, "Row 0", 0);
-			grid.AddRow(1, "Row 1", 1);
-			grid.AddRow(2, "Row 2", 2);
-			grid.AddRow(3, "Row 4", 3);
-			grid.AddRow(4, "Row 5", 4);
-			grid.AddRow(5, "Row 6", 5);
+			grid_results.EnableDragDrop();
+			grid_results.SetColumnTitles("Text,Filter1,Filter2,Filter3");
+			grid_results.SetColumnWidths("100,80,80,80");
+			grid_results.Init();
+			grid_results.AddRow(0, "Row 0", 0);
+			grid_results.AddRow(1, "Row 1", 1);
+			grid_results.AddRow(2, "Row 2", 2);
+			grid_results.AddRow(3, "Row 4", 3);
+			grid_results.AddRow(4, "Row 5", 4);
+			grid_results.AddRow(5, "Row 6", 5);
 		}
 
 		//---------------------------------------------------------------------------
@@ -395,6 +404,50 @@ public class main
 			json_layout = data;
 		});
 	}
+
+	/// <summary>
+	/// Aha!
+	/// </summary>
+	/// <param name="srcID"></param>
+	/// <param name="dstID"></param>
+	/// <param name="srcWidget"></param>
+	/// <param name="dstWidget"></param>
+	/// <param name="srcColumn"></param>
+	/// <param name="dstColumn"></param>
+	/// <returns></returns>
+	private bool FilterTreeDragDropHandler(String[] srcIDs, String dstID, object srcWidget, object dstWidget, int srcColumn, int dstColumn)
+	{
+		if (srcWidget == dstWidget)
+		{
+			NativeCode.Log("Source == destination");
+		}	
+		else if (srcWidget == catalog.Instance &&
+			dstWidget == tree_filters.Instance)
+		{
+			if (dstColumn > 0)
+			{
+				DHTMLXGridCell dstCell = tree_filters.Cells(dstID, dstColumn);
+				if (dstCell != null)
+				{
+					//
+					String dv = dstCell.getValue();
+					//
+					for (int s = 0; s < srcIDs.Length; s++)
+					{
+						DHTMLXGridCell srcCell = catalog.Cells(srcIDs[s], srcColumn);
+						dv += srcCell.getValue();
+						dv += ",";
+					}
+					//
+					dstCell.setValue(dv);
+					//
+					return false;
+				}
+			}
+		}
+		return !(srcWidget == dstWidget);
+	}
+
 
 	/// <summary>
 	/// This is effectively the program entry point
