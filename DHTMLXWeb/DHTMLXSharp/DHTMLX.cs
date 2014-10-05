@@ -123,11 +123,53 @@ namespace DHTMLXSharp
 		[InlineCode("{parent}.attachToolbar()")]
 		object _Attach(DHTMLXCell parent) { return null; }
 
+		/// <summary>
+		/// Set server-side path for icons (i.e. "data/imgs/")
+		/// </summary>
+		/// <param name="arg"></param>
 		[InlineCode("{this}.$_instance.setIconsPath({arg})")]
 		public void SetIconPath(String arg) { }
 
+		/// <summary>
+		/// Load toolbar structure from XML
+		/// </summary>
+		/// <param name="arg"></param>
 		[InlineCode("{this}.$_instance.loadStruct({arg})")]
 		public void LoadXML(String arg) { }
+
+		/// <summary>
+		/// Add a new button
+		/// </summary>
+		/// <param name="id"></param>
+		/// <param name="text"></param>
+		/// <param name="imgEnabled"></param>
+		/// <param name="imgDisabled"></param>
+		[InlineCode("{this}.$_instance.addButton({id},{text},{imgEnabled},{imgDisabled})")]
+		public void AddButton(String id,String text,String imgEnabled,String imgDisabled) {}
+
+		/// <summary>
+		/// Add a separator
+		/// </summary>
+		[InlineCode("{this}.$_instance.addSeparator()")]
+		public void AddSeparator() { }
+
+		/// <summary>
+		/// typedef an event handler
+		/// </summary>
+		public delegate void ClickHandlerType(String id);
+
+		/// <summary>
+		/// OnClick += Function with EventHandlerType signature
+		/// </summary>
+		public event ClickHandlerType OnClick
+		{
+			[InlineCode("{this}.$_instance.attachEvent('onClick',{value})")]
+			add { }
+
+			// [InlineCode("{this}.$_instance.attachEvent('onClick',{value})")]
+			remove { }
+		}
+
 		/// <summary>
 		/// 
 		/// </summary>
@@ -309,6 +351,13 @@ namespace DHTMLXSharp
 		[InlineCode("{this}.$_instance.addRow({new_id},{text},{index})")]
 		public void AddRow(int new_id, string text, int index) { }
 
+		/// <summary>
+		/// Clear the grid. Clears header if arg is true
+		/// </summary>
+		/// <param name="bHeader"></param>
+		[InlineCode("{this}.$_instance.clearAll({bHeader})")]
+		public void Clear(bool bHeader) { }
+
 		//-------------------------------------------------
 		/// <summary>
 		/// Load content from an XML file
@@ -420,6 +469,27 @@ namespace DHTMLXSharp
 		[InlineCode("{this}.$_instance.loadXML({xml_path})")]
 		public void LoadXML(String xml_path) { }
 
+		/// <summary>
+		/// Given an object (say) retrieved from server as XML, build tree
+		/// </summary>
+		/// <param name="xml_obj"></param>
+		[InlineCode("{this}.$_instance.parse({xml_obj},\"xml\")")]
+		public void LoadFromXMLObject(object xml_obj) { }
+
+		/// <summary>
+		/// Given an object (say) retrieved from server as JSON, build tree
+		/// </summary>
+		/// <param name="xml_obj"></param>
+		[InlineCode("{this}.$_instance.parse({json_obj},\"json\")")]
+		public void LoadFromJSONObject(object json_obj) { }
+
+		/// <summary>
+		/// Get content in XML format
+		/// </summary>
+		/// <returns></returns>
+		[InlineCode("{this}.$_instance.serialize()")]
+		public object SaveToXML() { return null; }
+
 		//
 		[InlineCode("{this}.$_instance.enableContextMenu({menu})")]
 		void _SetContextMenu(object menu) { }
@@ -439,9 +509,16 @@ namespace DHTMLXSharp
 		[InlineCode("{this}.$_instance.enableMercyDrag(true)")]
 		void _EnableDragDropCopy() { }
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="arg"></param>
 		[InlineCode("{this}.$_instance.enableMultiselect({arg})")]
 		void _EnableMultipleSelection(bool arg) { }
 
+		/// <summary>
+		/// 
+		/// </summary>
 		public void EnableDragDrop()
 		{
 			_EnableDragDrop();
@@ -515,6 +592,9 @@ namespace DHTMLXSharp
 
 		public delegate bool DragDropHandlerType(String[] srcIDs, String dstID, object srcWidget, object dstWidget, int srcColumn, int dstColumn);
 
+		/// <summary>
+		/// Return false to disable drop, true to enable
+		/// </summary>
 		public event DragDropHandlerType OnDragDrop;
 
 		/// <summary>
@@ -525,6 +605,61 @@ namespace DHTMLXSharp
 		//[InlineCode("{parent}.attachTreeGrid()")]
 		[InlineCode("{parent}.attachGrid()")]
 		object _Attach(object parent) { return null; }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <returns></returns>
+		[InlineCode("{this}.$_instance.getRowsNum()")]
+		object _GetRowCount() { return null; }
+
+		/// <summary>
+		/// How many rows in the grid?
+		/// </summary>
+		/// <returns></returns>
+		public int GetRowCount() { return (int) _GetRowCount(); }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="index"></param>
+		/// <returns></returns>
+		[InlineCode("{this}.$_instance.getRowId({index})")]
+		object _GetRowId(int index) {  return null; }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="index"></param>
+		/// <returns></returns>
+		[InlineCode("{this}.$_instance.getParentId({rowID})")]
+		object _GetParentRowId(String rowID) { return null; }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="index"></param>
+		/// <returns></returns>
+		public String GetRowId(int index) { return _GetRowId(index) as String; }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="row_id"></param>
+		/// <returns></returns>
+		[InlineCode("{this}.$_instance.getUserData({row_id},{key})")]
+		public String GetRowData(String row_id, String key) { return null; }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="index"></param>
+		/// <returns></returns>
+		public String GetParentRowId(String rowID) 
+		{
+			object obj = _GetParentRowId(rowID);
+			return (obj == null ? null : obj as String);
+		}
 
 		/// <summary>
 		/// 
@@ -583,6 +718,12 @@ namespace DHTMLXSharp
 		/// <returns></returns>
 		[InlineCode("{this}.$_instance.cells({row_id},{column})")]
 		public DHTMLXGridCell Cells(String row_id,int column) { return null; }
+
+		/// <summary>
+		/// Clear the grid, keep the header
+		/// </summary>
+		[InlineCode("{this}.$_instance.clearAll()")]
+		public void ClearContent() { }
 
 		/// <summary>
 		/// For those times we need the underlying JS object
@@ -1116,6 +1257,145 @@ namespace DHTMLXSharp
 			get
 			{
 				return _instance;
+			}
+		}
+	}
+
+	/// <summary>
+	/// Websocket wrapper
+	/// </summary>
+	class WebSocket
+	{
+		/// <summary>
+		/// 
+		/// </summary>
+		object _instance = null;
+		//
+		bool _connected = false;
+
+		[InlineCode("new WebSocket({url})")]
+		object _Attach(String url) { return null; }
+
+		[InlineCode("{this}.$_instance.send({arg})")]
+		public void Send(String arg) { }
+		
+		[InlineCode("{this}.$_instance.close()")]
+		public void Close() { }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="arg"></param>
+		/// <returns></returns>
+		[InlineCode("{arg}.data")]
+		public object _Data(object arg) { return null; }
+
+		/// <summary>
+		/// Internal delegate for receving data
+		/// </summary>
+		/// <param name="data"></param>
+		delegate void _MessageHandlerType(object data);
+		event _MessageHandlerType _OnDataReceived
+		{
+			[InlineCode("{this}.$_instance.onmessage = {value}")]
+			add { }
+			remove { }
+		}
+		/// <summary>
+		/// 
+		/// </summary>
+		delegate void _ConnectedHandlerType();
+		event _ConnectedHandlerType _OnConnected
+		{
+			[InlineCode("{this}.$_instance.onopen = {value}")]
+			add { }
+			remove { }
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		delegate void _DisconnectedHandlerType();
+		event _DisconnectedHandlerType _OnDisconnected
+		{
+			[InlineCode("{this}.$_instance.onclose = {value}")]
+			add { }
+			remove { }
+		}
+
+		/// <summary>
+		/// For external consumers
+		/// </summary>
+		public delegate void ConnectedHandlerType();
+		public event ConnectedHandlerType OnConnected;
+
+		/// <summary>
+		/// For external consumers
+		/// </summary>
+		public delegate void DisconnectedHandlerType();
+		public event DisconnectedHandlerType OnDisconnected;
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="data"></param>
+		public delegate void ReceivedHandlerType(WebSocket sender,object data);
+		public event ReceivedHandlerType OnDataReceived;
+
+		//
+		public bool Connected
+		{
+			get {  return _connected; }
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="url"></param>
+		public WebSocket(String url)
+		{
+			_instance = _Attach(url);
+			if (_instance != null)
+			{
+				_OnConnected += WebSocket_OnConnected;
+				_OnDisconnected += WebSocket__OnDisconnected;
+				_OnDataReceived += WebSocket__OnDataReceived;
+			}
+		}
+
+		/// <summary>
+		/// We have got data, do something with it ...
+		/// </summary>
+		/// <param name="data"></param>
+		void WebSocket__OnDataReceived(object data)
+		{
+			if (OnDataReceived != null)
+			{
+				object content = _Data(data);
+				OnDataReceived(this,content);
+			}
+		}
+
+		void WebSocket__OnDisconnected()
+		{
+			NativeCode.Log("WebSocket__OnDisconnected()");
+			_connected = false;
+			if (OnDisconnected != null)
+			{
+				OnDisconnected();
+			}
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		void WebSocket_OnConnected()
+		{
+			NativeCode.Log("WebSocket_OnConnected()");
+			_connected = true;
+			if (OnConnected != null)
+			{
+				OnConnected();
 			}
 		}
 	}

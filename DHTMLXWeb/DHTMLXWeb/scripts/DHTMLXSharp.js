@@ -136,6 +136,10 @@
 		this.$_instance = null;
 		this.$_instance = parent.attachToolbar();
 	};
+	$DHTMLXSharp_$DHTMLXToolBar.prototype = {
+		remove_$onClick: function(value) {
+		}
+	};
 	////////////////////////////////////////////////////////////////////////////////
 	// DHTMLXSharp.DHTMLXTreeGrid
 	var $DHTMLXSharp_$DHTMLXTreeGrid = function(parent, settings) {
@@ -181,6 +185,16 @@
 		},
 		remove_$onDragDrop: function(value) {
 			this.$1$OnDragDropField = ss.delegateRemove(this.$1$OnDragDropField, value);
+		},
+		$getRowCount: function() {
+			return ss.Nullable.unbox(ss.cast(this.$_instance.getRowsNum(), ss.Int32));
+		},
+		$getRowId: function(index) {
+			return ss.safeCast(this.$_instance.getRowId(index), String);
+		},
+		$getParentRowId: function(rowID) {
+			var obj = this.$_instance.getParentId(rowID);
+			return (ss.isNullOrUndefined(obj) ? null : ss.safeCast(obj, String));
 		},
 		get_$instance: function() {
 			return this.$_instance;
@@ -308,6 +322,70 @@
 		}
 	};
 	////////////////////////////////////////////////////////////////////////////////
+	// DHTMLXSharp.WebSocket
+	var $DHTMLXSharp_$WebSocket = function(url) {
+		this.$_instance = null;
+		this.$_connected = false;
+		this.$1$OnConnectedField = null;
+		this.$1$OnDisconnectedField = null;
+		this.$1$OnDataReceivedField = null;
+		this.$_instance = new WebSocket(url);
+		if (ss.isValue(this.$_instance)) {
+			this.$_instance.onopen = ss.mkdel(this, this.$webSocket_OnConnected);
+			this.$_instance.onclose = ss.mkdel(this, this.$webSocket__OnDisconnected);
+			this.$_instance.onmessage = ss.mkdel(this, this.$webSocket__OnDataReceived);
+		}
+	};
+	$DHTMLXSharp_$WebSocket.prototype = {
+		remove_$_OnDataReceived: function(value) {
+		},
+		remove_$_OnConnected: function(value) {
+		},
+		remove_$_OnDisconnected: function(value) {
+		},
+		add_$onConnected: function(value) {
+			this.$1$OnConnectedField = ss.delegateCombine(this.$1$OnConnectedField, value);
+		},
+		remove_$onConnected: function(value) {
+			this.$1$OnConnectedField = ss.delegateRemove(this.$1$OnConnectedField, value);
+		},
+		add_$onDisconnected: function(value) {
+			this.$1$OnDisconnectedField = ss.delegateCombine(this.$1$OnDisconnectedField, value);
+		},
+		remove_$onDisconnected: function(value) {
+			this.$1$OnDisconnectedField = ss.delegateRemove(this.$1$OnDisconnectedField, value);
+		},
+		add_$onDataReceived: function(value) {
+			this.$1$OnDataReceivedField = ss.delegateCombine(this.$1$OnDataReceivedField, value);
+		},
+		remove_$onDataReceived: function(value) {
+			this.$1$OnDataReceivedField = ss.delegateRemove(this.$1$OnDataReceivedField, value);
+		},
+		get_$connected: function() {
+			return this.$_connected;
+		},
+		$webSocket__OnDataReceived: function(data) {
+			if (!ss.staticEquals(this.$1$OnDataReceivedField, null)) {
+				var content = data.data;
+				this.$1$OnDataReceivedField(this, content);
+			}
+		},
+		$webSocket__OnDisconnected: function() {
+			console.log('WebSocket__OnDisconnected()');
+			this.$_connected = false;
+			if (!ss.staticEquals(this.$1$OnDisconnectedField, null)) {
+				this.$1$OnDisconnectedField();
+			}
+		},
+		$webSocket_OnConnected: function() {
+			console.log('WebSocket_OnConnected()');
+			this.$_connected = true;
+			if (!ss.staticEquals(this.$1$OnConnectedField, null)) {
+				this.$1$OnConnectedField();
+			}
+		}
+	};
+	////////////////////////////////////////////////////////////////////////////////
 	// DHTMLXSharp.DHTMLXTreeGridSettings
 	var $DHTMLXSharp_DHTMLXTreeGridSettings = function() {
 	};
@@ -337,6 +415,7 @@
 		this.$tree_filters = null;
 		this.$status_bar = null;
 		this.$tool_bar = null;
+		this.$ws = null;
 		this.$json_layout = null;
 	};
 	$DHTMLXSharp_main.prototype = {
@@ -344,86 +423,48 @@
 			var s = data.toString();
 			window.alert(s);
 		},
-		onJSONError: function(request, textStatus, error) {
-			var s = textStatus.toString();
-			window.alert(s);
+		onCatalogSuccess: function(data, textStatus, request) {
+			if (ss.isValue(data)) {
+				//String xml = data as String;
+				//NativeCode.Log(xml);
+				this.$catalog.$_instance.clearAll();
+				this.$catalog.$_instance.parse(data, 'xml');
+			}
 		},
-		sendJSONviaAJAX: function(data) {
+		onCatalogError: function(request, textStatus, error) {
+			var s = textStatus.toString();
+			this.$status_bar.set_$text(s);
+		},
+		onJSONError: function(request, textStatus, error) {
+			var s = 'unknown exception';
+			if (ss.isValue(error)) {
+				// s = error.Message;
+			}
+			this.$status_bar.set_$text(ss.formatString('{0} {1}', textStatus, s));
+		},
+		sendJSONviaAJAX: function(key, format, data_object) {
 			var mapper = {};
-			mapper['key'] = data;
-			var opts = { url: 'http://localhost:8888/ajax', type: 'POST', dataType: 'json', async: true, success: ss.mkdel(this, this.onJSONSuccess), error: ss.mkdel(this, this.onJSONError) };
+			mapper[key] = data_object;
+			var opts = { url: $DHTMLXSharp_main.$g_http_url + '/ajax', type: 'POST', dataType: format, async: true, success: ss.mkdel(this, this.onJSONSuccess), error: ss.mkdel(this, this.onJSONError) };
+			opts.contentType = 'application/json';
 			opts.data = mapper;
 			//
-			//((dynamic)opts).Data = mapper.ToString();
-			// make the request
 			var req = $.ajax(opts);
+			// on success ...
+			req.success(ss.mkdel(this, function(data) {
+				//NativeCode.Log("Posted data OK");
+				this.$status_bar.set_$text(ss.formatString('Posted {0} to {1}', key, opts.url));
+			}));
 		},
 		$onButtonClicked: function(window, name) {
 			//
 			console.log('OnButtonClicked => ' + name);
-			if (name === 'save') {
-				//			string s = ;
-				this.sendJSONviaAJAX(window.$getData());
-			}
 			window.set_$visible(false);
 		},
 		$onMenuClick: function(id, zoneId, caState) {
-			var s;
-			if (id === 'Server_JSON') {
-				var js = $DHTMLXSharp_main$JSONThing.$ctor();
-				js.FName = 'Hello';
-				js.LName = 'World';
-				s = $.toJSON(js);
-				if (s.length > 0) {
-					window.alert(s);
-				}
-				//
-				var js2 = $.parseJSON(s);
-				//
-				if (ss.isNullOrUndefined(js2)) {
-				}
-			}
-			else if (id === 'Server_Ajax') {
-				// set up the AJAX options
-				//jQueryAjaxOptions opts = new jQueryAjaxOptio
-				var js1 = $DHTMLXSharp_main$JSONThing.$ctor();
-				js1.FName = 'Hello';
-				js1.LName = 'World';
-				var mapper = {};
-				mapper['key'] = js1;
-				var opts = { url: 'http://localhost:8888/ajax', dataType: 'json', async: true, success: ss.mkdel(this, this.onJSONSuccess), error: ss.mkdel(this, this.onJSONError) };
-				opts.data = mapper;
-				//
-				var a = [js1];
-				//
-				opts.data = a;
-				//
-				opts.type = 'POST';
-				//
-				//((dynamic)opts).Data = mapper.ToString();
-				// make the request
+			if (id === 'Server_Catalog') {
+				var opts = { url: $DHTMLXSharp_main.$g_http_url + '/ajax', dataType: 'xml', async: true, success: ss.mkdel(this, this.onCatalogSuccess), error: ss.mkdel(this, this.onCatalogError), type: 'GET' };
 				var req = $.ajax(opts);
-			}
-			else if (id === 'Form_Show') {
-				if (ss.isValue(this.$win)) {
-					//win.Text = id;
-					this.$win.set_$center(true);
-					this.$win.set_$visible(true);
-				}
-			}
-			else if (id === 'Form_Show_Modal') {
-				if (ss.isValue(this.$win)) {
-					//win.Text = id;
-					this.$win.set_$center(true);
-					this.$win.set_$visible(true);
-					this.$win.set_$modal(true);
-				}
-			}
-			else if (id === 'Tree_Load_Local') {
-				this.$grid_results.$_instance.load('./data/data.json', 'json');
-			}
-			else if (id === 'Tree_Load_Remote') {
-				this.$grid_results.$_instance.load('http://localhost:8888/ajax');
 			}
 		},
 		$gridDragDropHandler: function(srcIDs, dstID, srcWidget, dstWidget, srcColumn, dstColumn) {
@@ -462,12 +503,13 @@
 			this.$tool_bar = new $DHTMLXSharp_$DHTMLXToolBar(main_cell);
 			this.$tool_bar.$_instance.setIconsPath('data/imgs/');
 			this.$tool_bar.$_instance.loadStruct('data/toolbar.xml');
+			this.$tool_bar.$_instance.attachEvent('onClick', ss.mkdel(this, this.$tool_bar_OnClick));
 			//
 			this.$main_menu = new $DHTMLXSharp_$DHTMLXMenu(main_cell);
 			//
 			if (ss.isValue(this.$main_menu)) {
 				this.$main_menu.$_instance.addNewSibling(null, 'Tree', 'Tree', false);
-				this.$main_menu.$_instance.addNewChild('Tree', 0, 'Tree_Load_Local', 'Load Tree from Assets...', false);
+				this.$main_menu.$_instance.addNewChild('Tree', 0, 'Tree_Load_Local', 'Load catalog from Assets...', false);
 				this.$main_menu.$_instance.addNewChild('Tree', 1, 'Tree_Load_Remote', 'Load Tree from Server...', false);
 				this.$main_menu.$_instance.addNewSibling(null, 'Form', 'Form', false);
 				this.$main_menu.$_instance.addNewChild('Form', 0, 'Form_Show', 'Show Form...', false);
@@ -477,6 +519,7 @@
 				this.$main_menu.$_instance.addNewSibling(null, 'Server', 'Server', false);
 				this.$main_menu.$_instance.addNewChild('Server', 0, 'Server_Ajax', 'Make AJAX call...', false);
 				this.$main_menu.$_instance.addNewChild('Server', 1, 'Server_JSON', 'To JSON string...', false);
+				this.$main_menu.$_instance.addNewChild('Server', 2, 'Server_Catalog', 'Get Catalog via AJAX...', false);
 				this.$main_menu.$_instance.addNewSibling(null, 'file', 'File', false);
 				this.$main_menu.$_instance.addNewChild('file', 0, 'open', 'Open', false);
 				this.$main_menu.$_instance.addNewChild('file', 1, 'new', 'New', false);
@@ -528,25 +571,18 @@
 			this.$catalog = new $DHTMLXSharp_$DHTMLXTreeGrid.$ctor2(tab, 'data/catalog.xml');
 			this.$catalog.$enableDragDrop();
 			this.$catalog.set_$multipleSelection(true);
+			//---------------------------------------------------------------------------
 			// base tree context menu
 			var ctx_catalog = new $DHTMLXSharp_$DHTMLXContextMenu('data/imgs/');
 			ctx_catalog.$_instance.loadStruct('data/menu_ctx_catalog.xml');
 			this.$catalog.$setContextMenu(ctx_catalog);
+			this.$catalog.add_$onDragDrop(ss.mkdel(this, this.$catalog_OnDragDrop));
 			//---------------------------------------------------------------------------
+			// Create results grid
 			tab = tabbar.$_instance.cells('Results');
 			this.$grid_results = new $DHTMLXSharp_$DHTMLXGrid.$ctor1(tab);
-			if (ss.isValue(this.$grid_results)) {
-				this.$grid_results.$enableDragDrop();
-				this.$grid_results.$_instance.setHeader('Text,Filter1,Filter2,Filter3');
-				this.$grid_results.$_instance.setInitWidths('100,80,80,80');
-				this.$grid_results.$_instance.init();
-				this.$grid_results.$_instance.addRow(0, 'Row 0', 0);
-				this.$grid_results.$_instance.addRow(1, 'Row 1', 1);
-				this.$grid_results.$_instance.addRow(2, 'Row 2', 2);
-				this.$grid_results.$_instance.addRow(3, 'Row 4', 3);
-				this.$grid_results.$_instance.addRow(4, 'Row 5', 4);
-				this.$grid_results.$_instance.addRow(5, 'Row 6', 5);
-			}
+			this.$grid_results.$enableDragDrop();
+			this.$grid_results.set_$enableMultipleSelection(true);
 			//---------------------------------------------------------------------------
 			var flayout = Mapper['formLayout'];
 			//
@@ -558,6 +594,11 @@
 			this.$win.set_$text('Popup Window with embedded form');
 			this.$win.add_$onClick(ss.mkdel(this, this.$onButtonClicked));
 			//		win.ShowModal();
+			// set up the web socket
+			this.$ws = new $DHTMLXSharp_$WebSocket($DHTMLXSharp_main.$g_ws_url + '/ajax');
+			this.$ws.add_$onConnected(ss.mkdel(this, this.$ws_OnConnected));
+			this.$ws.add_$onDisconnected(ss.mkdel(this, this.$ws_OnDisconnected));
+			this.$ws.add_$onDataReceived(ss.mkdel(this, this.$ws_OnDataReceived));
 			// do some AJAxing at startup
 			var opts = { url: 'http://localhost:8888/data/form1.json', dataType: 'json', async: true };
 			// make the request
@@ -566,6 +607,77 @@
 			req.success(ss.mkdel(this, function(data) {
 				this.$json_layout = data;
 			}));
+		},
+		$ws_OnDataReceived: function(sender, data) {
+			if (ss.isValue(data)) {
+				var s = ss.safeCast(data, String);
+				this.$status_bar.set_$text(ss.formatString('Got {0} from {1}', s, $DHTMLXSharp_main.$g_ws_url));
+			}
+		},
+		$ws_OnDisconnected: function() {
+			console.log('ws_OnDisconnected()');
+			this.$status_bar.set_$text(ss.formatString('*No* connection to {0}', $DHTMLXSharp_main.$g_ws_url));
+		},
+		$ws_OnConnected: function() {
+			console.log('ws_OnConnected()');
+			this.$status_bar.set_$text(ss.formatString('Connected to {0}/ajax', $DHTMLXSharp_main.$g_ws_url));
+		},
+		$QS: function(arg) {
+			var ret = '"';
+			if (ss.isValue(arg)) {
+				ret += arg;
+			}
+			ret += '"';
+			return ret;
+		},
+		$tool_bar_OnClick: function(id) {
+			console.log(ss.formatString('tool_bar_OnClick {0}', id));
+			if (id === 'save') {
+				// serialize to raw JSON
+				var sb = new ss.StringBuilder();
+				sb.append('[');
+				var count = this.$tree_filters.$getRowCount();
+				for (var i = 0; i < count; i++) {
+					//String sf = null;
+					//String st = null;
+					var rid = this.$tree_filters.$getRowId(i);
+					var obj = this.$tree_filters.$_instance.getUserData(rid, 'type');
+					var pid = this.$tree_filters.$getParentRowId(rid);
+					if (ss.isValue(id) && obj.length > 0) {
+						sb.append('{"rid":');
+						sb.append(this.$QS(rid));
+						sb.append(',"pid":');
+						sb.append(this.$QS(pid));
+						// verbatim text
+						var cell = this.$tree_filters.$_instance.cells(rid, $DHTMLXSharp_main$FilterTree.eDescription);
+						sb.append(',"desc":');
+						sb.append(this.$QS(cell.getValue({})));
+						// filter(s)
+						cell = this.$tree_filters.$_instance.cells(rid, $DHTMLXSharp_main$FilterTree.eFilter);
+						sb.append(',"filter":');
+						sb.append(this.$QS(cell.getValue({})));
+						// target
+						cell = this.$tree_filters.$_instance.cells(rid, $DHTMLXSharp_main$FilterTree.eTarget);
+						sb.append(',"target":');
+						sb.append(this.$QS(cell.getValue({})));
+						sb.append('}');
+						// gak ...
+						if (i < count - 1) {
+							sb.append(',');
+						}
+					}
+				}
+				sb.append(']');
+				//
+				//object json_object = jQuery.ParseJson(sb.ToString());
+				//SendJSONviaAJAX("tree", "json", sb.ToString());
+				if (ss.isValue(this.$ws)) {
+					this.$ws.$_instance.send(sb.toString());
+				}
+			}
+		},
+		$catalog_OnDragDrop: function(srcIDs, dstID, srcWidget, dstWidget, srcColumn, dstColumn) {
+			return false;
 		},
 		$filterTreeDragDropHandler: function(srcIDs, dstID, srcWidget, dstWidget, srcColumn, dstColumn) {
 			if (ss.referenceEquals(srcWidget, dstWidget)) {
@@ -598,6 +710,10 @@
 		$(ss.mkdel($t1, $t1.$attach));
 	};
 	////////////////////////////////////////////////////////////////////////////////
+	// DHTMLXSharp.main.FilterTree
+	var $DHTMLXSharp_main$FilterTree = function() {
+	};
+	////////////////////////////////////////////////////////////////////////////////
 	// DHTMLXSharp.main.JSONThing
 	var $DHTMLXSharp_main$JSONThing = function() {
 	};
@@ -626,10 +742,18 @@
 	ss.registerClass(null, 'DHTMLXSharp.$DHTMLXWindowFactory', $DHTMLXSharp_$DHTMLXWindowFactory);
 	ss.registerClass(null, 'DHTMLXSharp.$NativeCode', $DHTMLXSharp_$NativeCode);
 	ss.registerClass(null, 'DHTMLXSharp.$Test', $DHTMLXSharp_$Test);
+	ss.registerClass(null, 'DHTMLXSharp.$WebSocket', $DHTMLXSharp_$WebSocket);
 	ss.registerClass(global, 'DHTMLXSharp.DHTMLXTreeGridSettings', $DHTMLXSharp_DHTMLXTreeGridSettings);
 	ss.registerClass(global, 'DHTMLXSharp.main', $DHTMLXSharp_main);
+	ss.registerClass(global, 'DHTMLXSharp.main$FilterTree', $DHTMLXSharp_main$FilterTree);
 	ss.registerClass(global, 'DHTMLXSharp.main$JSONThing', $DHTMLXSharp_main$JSONThing);
 	$DHTMLXSharp_$DHTMLXLayout.$formats = new (ss.makeGenericType(ss.Dictionary$2, [$DHTMLXSharp_$DHTMLXLayout$Format, String]))();
 	$DHTMLXSharp_$DHTMLXWindowFactory.$_factory = null;
+	$DHTMLXSharp_main$FilterTree.eIndex = 0;
+	$DHTMLXSharp_main$FilterTree.eDescription = 1;
+	$DHTMLXSharp_main$FilterTree.eFilter = 2;
+	$DHTMLXSharp_main$FilterTree.eTarget = 3;
+	$DHTMLXSharp_main.$g_http_url = 'http://192.168.101.12:8888';
+	$DHTMLXSharp_main.$g_ws_url = 'ws://192.168.101.12:8888';
 	$DHTMLXSharp_main.$main();
 })();

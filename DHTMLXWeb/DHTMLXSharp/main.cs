@@ -20,6 +20,15 @@ namespace DHTMLXSharp
 public class main
 {	
 	//
+	public static class FilterTree
+	{
+		public const int eIndex = 0;
+		public const int eDescription = 1;
+		public const int eFilter = 2;
+		public const int eTarget = 3;
+	}
+
+	//
 	DHTMLXWindowFactory wf = null;
 
 	/// <summary>
@@ -40,33 +49,81 @@ public class main
 
 	}
 
-	public void OnJSONError(jQueryXmlHttpRequest request, string textStatus, Exception error)
+	/// <summary>
+	/// AJAX handler for requesting catalogs
+	/// </summary>
+	/// <param name="data"></param>
+	/// <param name="textStatus"></param>
+	/// <param name="request"></param>
+	public void OnCatalogSuccess(object data, string textStatus, jQueryXmlHttpRequest request)
 	{
-		string s = textStatus.ToString();
-		Window.Alert(s);
-
+		if (data != null)
+		{
+			//String xml = data as String;
+			//NativeCode.Log(xml);
+			catalog.ClearContent();
+			catalog.LoadFromXMLObject(data);
+		}
 	}
 
-	public void SendJSONviaAJAX(object data)
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="request"></param>
+	/// <param name="textStatus"></param>
+	/// <param name="error"></param>
+	public void OnCatalogError(jQueryXmlHttpRequest request, string textStatus, Exception error)
+	{
+		string s = textStatus.ToString();
+		status_bar.Text = s;
+	}
+	
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="request"></param>
+	/// <param name="textStatus"></param>
+	/// <param name="error"></param>
+	public void OnJSONError(jQueryXmlHttpRequest request, string textStatus, Exception error)
+	{
+		string s = "unknown exception";
+		if (error != null)
+		{
+			// s = error.Message;
+		}
+		status_bar.Text = String.Format("{0} {1}", textStatus, s);
+	}
+
+	/// <summary>
+	/// Send an arbitrary object to the server
+	/// </summary>
+	/// <param name="key"></param>
+	/// <param name="format"></param>
+	/// <param name="data"></param>
+	public void SendJSONviaAJAX(String key,String format,object data_object)
 	{
 		JsDictionary<String, object> mapper = new JsDictionary<String, object>();
-		mapper["key"] = data;
+		mapper[key] = data_object;
 
 		jQueryAjaxOptions opts = new jQueryAjaxOptions
 		{
-			Url = "http://localhost:8888/ajax",
+			Url = g_http_url + "/ajax",
 			Type = "POST",
-			DataType = "json",
+			DataType = format,
 			Async = true,
 			Success = OnJSONSuccess,
 			Error = OnJSONError
 		};
+		opts.ContentType = "application/json";
 		opts.Data = mapper;
 		//
-		//((dynamic)opts).Data = mapper.ToString();
-		// make the request
 		var req = jQuery.Ajax(opts);
-
+		// on success ...
+		req.Success(data =>
+		{
+			//NativeCode.Log("Posted data OK");
+			status_bar.Text = String.Format("Posted {0} to {1}", key,opts.Url);
+		});
 	}
 	/// <summary>
 	/// Handler for Window/Form button clicks
@@ -77,12 +134,6 @@ public class main
 	{
 		//
 		NativeCode.Log("OnButtonClicked => " + name);
-
-		if (name == "save")
-		{
-//			string s = ;
-			SendJSONviaAJAX(window.GetData());
-		}
 		window.Visible = false;
 	}
 	
@@ -94,8 +145,21 @@ public class main
 	/// <param name="caState"></param>
 	private void OnMenuClick(String id, String zoneId, object caState)
 	{
-		String s;
-		if (id == "Server_JSON")
+		if (id == "Server_Catalog")
+		{
+			jQueryAjaxOptions opts = new jQueryAjaxOptions
+			{
+				Url = g_http_url + "/ajax",
+				DataType = "xml",
+				Async = true,
+				Success = OnCatalogSuccess,
+				Error = OnCatalogError,
+				Type = "GET"
+			};
+			var req = jQuery.Ajax(opts);
+		}
+#if false
+		else if (id == "Server_JSON")
 		{
 			JSONThing js = new JSONThing();
 			js.FName = "Hello";
@@ -164,12 +228,16 @@ public class main
 		}
 		else if (id == "Tree_Load_Local")
 		{
-			grid_results.LoadJSON("./data/data.json");
+			catalog.ClearContent();
+			catalog.LoadXML("/data/catalog3.xml");
 		}
 		else if (id == "Tree_Load_Remote")
 		{
-			grid_results.LoadURI("http://localhost:8888/ajax");
+			//grid_results.LoadURI("http://localhost:8888/ajax");
+			grid_results.Clear(true);
+			grid_results.LoadXML("data/grid.xml");
 		}
+#endif
 	}
 
 	// These end up being in the 'global' scope
@@ -181,6 +249,12 @@ public class main
 		public string LName { get; set; }
 	}
 	
+	/// <summary>
+	/// Default URL for all AJAX etc.
+	/// </summary>
+	static String g_http_url = "http://192.168.101.12:8888";
+	static String g_ws_url = "ws://192.168.101.12:8888";
+
 	/// <summary>
 	/// /// The main application layout object
 	/// </summary>
@@ -203,6 +277,8 @@ public class main
 	//
 	DHTMLXStatusBar status_bar = null;
 	DHTMLXToolBar tool_bar = null;
+	//
+	WebSocket ws = null;
 	//
 	/// <summary>
 	/// layout definition stored as a JSON object
@@ -278,6 +354,7 @@ public class main
 		tool_bar = new DHTMLXToolBar(main_cell);
 		tool_bar.SetIconPath("data/imgs/");
 		tool_bar.LoadXML("data/toolbar.xml");
+		tool_bar.OnClick += tool_bar_OnClick;
 
 		//
 		main_menu = new DHTMLXMenu(main_cell);
@@ -286,7 +363,7 @@ public class main
 		{
 
 			main_menu.AddMenu(null, "Tree", "Tree", false);
-			main_menu.AddMenuItem("Tree", 0, "Tree_Load_Local", "Load Tree from Assets...", false);
+			main_menu.AddMenuItem("Tree", 0, "Tree_Load_Local", "Load catalog from Assets...", false);
 			main_menu.AddMenuItem("Tree", 1, "Tree_Load_Remote", "Load Tree from Server...", false);
 
 			main_menu.AddMenu(null, "Form", "Form", false);
@@ -297,6 +374,7 @@ public class main
 			main_menu.AddMenu(null, "Server", "Server", false);
 			main_menu.AddMenuItem("Server", 0, "Server_Ajax", "Make AJAX call...", false);
 			main_menu.AddMenuItem("Server", 1, "Server_JSON", "To JSON string...", false);
+			main_menu.AddMenuItem("Server", 2, "Server_Catalog", "Get Catalog via AJAX...", false);
 
 			main_menu.AddMenu(null, "file", "File", false);
 			main_menu.AddMenuItem("file", 0, "open", "Open", false);
@@ -359,27 +437,19 @@ public class main
 		catalog.EnableDragDrop();
 		catalog.MultipleSelection = true;
 
+		//---------------------------------------------------------------------------
 		// base tree context menu
 		DHTMLXContextMenu ctx_catalog = new DHTMLXContextMenu("data/imgs/");
 		ctx_catalog.Load("data/menu_ctx_catalog.xml");
 		catalog.SetContextMenu(ctx_catalog);
+		catalog.OnDragDrop += catalog_OnDragDrop;
 
 		//---------------------------------------------------------------------------
+		// Create results grid
 		tab = tabbar.Tabs("Results");
 		grid_results = new DHTMLXGrid(tab);
-		if (grid_results != null)
-		{
-			grid_results.EnableDragDrop();
-			grid_results.SetColumnTitles("Text,Filter1,Filter2,Filter3");
-			grid_results.SetColumnWidths("100,80,80,80");
-			grid_results.Init();
-			grid_results.AddRow(0, "Row 0", 0);
-			grid_results.AddRow(1, "Row 1", 1);
-			grid_results.AddRow(2, "Row 2", 2);
-			grid_results.AddRow(3, "Row 4", 3);
-			grid_results.AddRow(4, "Row 5", 4);
-			grid_results.AddRow(5, "Row 6", 5);
-		}
+		grid_results.EnableDragDrop();
+		grid_results.EnableMultipleSelection = true;
 
 		//---------------------------------------------------------------------------
 		object flayout = NativeCode.getLayout("formLayout");
@@ -394,6 +464,11 @@ public class main
 		win.OnClick += OnButtonClicked;
 //		win.ShowModal();
 
+		// set up the web socket
+		ws = new WebSocket(g_ws_url + "/ajax");
+		ws.OnConnected += ws_OnConnected;
+		ws.OnDisconnected += ws_OnDisconnected;
+		ws.OnDataReceived += ws_OnDataReceived;
 		// do some AJAxing at startup
 		jQueryAjaxOptions opts = new jQueryAjaxOptions { Url = "http://localhost:8888/data/form1.json", DataType = "json", Async = true };
 		// make the request
@@ -403,6 +478,119 @@ public class main
 		{
 			json_layout = data;
 		});
+	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="sender"></param>
+	/// <param name="data"></param>
+	void ws_OnDataReceived(WebSocket sender, object data)
+	{
+		if (data != null)
+		{
+			String s = data as String;
+			status_bar.Text = String.Format("Got {0} from {1}",s,g_ws_url);
+		}
+	}
+
+	void ws_OnDisconnected()
+	{
+ 		NativeCode.Log("ws_OnDisconnected()");
+		status_bar.Text = String.Format("*No* connection to {0}", g_ws_url);
+	}
+
+	void ws_OnConnected()
+	{
+		NativeCode.Log("ws_OnConnected()");
+		status_bar.Text = String.Format("Connected to {0}/ajax",g_ws_url);
+	}
+
+	/// <summary>
+	/// Quickie string quoter to help JSON
+	/// </summary>
+	/// <param name="arg"></param>
+	/// <returns></returns>
+	String QS(String arg)
+	{
+		String ret = "\"";
+		if (arg != null)
+		{
+			ret += arg;
+		}
+		ret += "\"";
+		return ret;
+	}
+	/// <summary>
+	/// Invoked when toolbar is clicked
+	/// </summary>
+	/// <param name="id"></param>
+	void tool_bar_OnClick(string id)
+	{
+		NativeCode.Log(String.Format("tool_bar_OnClick {0}",id));
+		if (id == "save")
+		{
+			// serialize to raw JSON
+			StringBuilder sb = new StringBuilder();
+			sb.Append("[");
+			int count = tree_filters.GetRowCount();
+			for (int i = 0; i < count; i++)
+			{
+				//String sf = null;
+				//String st = null;
+				String rid = tree_filters.GetRowId(i);
+				String obj = tree_filters.GetRowData(rid, "type");
+				String pid = tree_filters.GetParentRowId(rid);
+				if (id != null && obj.Length > 0)
+				{
+					sb.Append("{\"rid\":");
+					sb.Append(QS(rid));
+					sb.Append(",\"pid\":");
+					sb.Append(QS(pid));
+					// verbatim text
+					DHTMLXGridCell cell = tree_filters.Cells(rid, FilterTree.eDescription);
+					sb.Append(",\"desc\":");
+					sb.Append(QS(cell.getValue()));
+					// filter(s)
+					cell = tree_filters.Cells(rid, FilterTree.eFilter);
+					sb.Append(",\"filter\":");
+					sb.Append(QS(cell.getValue()));
+					// target
+					cell = tree_filters.Cells(rid, FilterTree.eTarget);
+					sb.Append(",\"target\":");
+					sb.Append(QS(cell.getValue()));
+					sb.Append("}");
+					// gak ...
+					if (i < count - 1)
+					{
+						sb.Append(",");
+					}
+				}
+			}
+			sb.Append("]");
+			//
+			//object json_object = jQuery.ParseJson(sb.ToString());
+			//SendJSONviaAJAX("tree", "json", sb.ToString());
+			if (ws != null)
+			{
+				ws.Send(sb.ToString());
+			}
+		}
+	}
+
+	/// <summary>
+	/// Disallow any drag/drop onto catalog
+	/// </summary>
+	/// <param name="srcIDs"></param>
+	/// <param name="dstID"></param>
+	/// <param name="srcWidget"></param>
+	/// <param name="dstWidget"></param>
+	/// <param name="srcColumn"></param>
+	/// <param name="dstColumn"></param>
+	/// <returns></returns>
+	bool catalog_OnDragDrop(string[] srcIDs, string dstID, object srcWidget, object dstWidget, int srcColumn, int dstColumn)
+	{
+		return false;
 	}
 
 	/// <summary>
