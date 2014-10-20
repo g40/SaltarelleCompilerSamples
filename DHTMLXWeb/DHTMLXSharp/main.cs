@@ -63,6 +63,7 @@ public class main
 			//NativeCode.Log(xml);
 			catalog.ClearContent();
 			catalog.LoadFromXMLObject(data);
+			status_bar.Text = String.Format("Loaded catalog from {0}{1}",g_http_url,"/ajax");
 		}
 	}
 
@@ -277,17 +278,19 @@ public class main
 	//
 	DHTMLXStatusBar status_bar = null;
 	DHTMLXToolBar tool_bar = null;
-	//
+
+	/// <summary>
+	/// Our web-socket instance for communication with server
+	/// </summary>
 	WebSocket ws = null;
 	//
-	/// <summary>
-	/// layout definition stored as a JSON object
-	/// we retrieve at startup ...
-	/// </summary>
-	object json_layout = null;
-	///
 
-	///
+	/// <summary>
+	/// Queue of things waiting to be JSON posted via socket
+	/// </summary>
+	List<String> _queue = new List<String>();
+
+	//
 	private bool GridDragDropHandler(String[] srcIDs, String dstID, object srcWidget, object dstWidget, int srcColumn, int dstColumn)
 	{
 		if (srcWidget == dstWidget)
@@ -398,19 +401,24 @@ public class main
 		cell = central_panel.Cells("a");
 		base_filters = new DHTMLXTreeGrid(cell, "data/filter_bases.xml");
 		base_filters.EnableDragDrop();
+		// so we can pop-up in empty regions
+		base_filters.AddContextMenuZone("gridBody");
 		base_filters.MultipleSelection = true;
-		base_filters.OnDragDrop += GridDragDropHandler;
+		base_filters.OnDragDrop += BaseTreeDragDropHandler;
 
 		// base tree context menu
-		DHTMLXContextMenu menu = new DHTMLXContextMenu("data/imgs/");
-		menu.Load("data/context_edit_menu.xml");
-		base_filters.SetContextMenu(menu);
+		DHTMLXContextMenu ctx_base_filters = new DHTMLXContextMenu("data/imgs/");
+		ctx_base_filters.Load("data/context_edit_menu.xml");
+		base_filters.SetContextMenu(ctx_base_filters);
+		ctx_base_filters.AddContextMenuZone("gridBody");
+		ctx_base_filters.OnClick += ctx_base_filters_OnClick;
 
 		//---------------------------------------------------------------------------
 		// filter tree
 		cell = central_panel.Cells("c");
 		tree_filters = new DHTMLXTreeGrid(cell, "data/tree_filter.xml");
 		tree_filters.EnableDragDrop();
+		tree_filters.AddContextMenuZone("gridBody");
 		tree_filters.MultipleSelection = true;
 		tree_filters.OnDragDrop += FilterTreeDragDropHandler;
 
@@ -418,6 +426,8 @@ public class main
 		DHTMLXContextMenu ctx_tree_filters = new DHTMLXContextMenu("data/imgs/");
 		ctx_tree_filters.Load("data/context_edit_menu.xml");
 		tree_filters.SetContextMenu(ctx_tree_filters);
+		ctx_tree_filters.AddContextMenuZone("gridBody");
+		ctx_tree_filters.OnClick += ctx_tree_filters_OnClick;
 
 		//---------------------------------------------------------------------------
 		// Right-hand panel contains catalog/results/charts
@@ -438,7 +448,7 @@ public class main
 		catalog.MultipleSelection = true;
 
 		//---------------------------------------------------------------------------
-		// base tree context menu
+		// catalog context menu
 		DHTMLXContextMenu ctx_catalog = new DHTMLXContextMenu("data/imgs/");
 		ctx_catalog.Load("data/menu_ctx_catalog.xml");
 		catalog.SetContextMenu(ctx_catalog);
@@ -464,20 +474,75 @@ public class main
 		win.OnClick += OnButtonClicked;
 //		win.ShowModal();
 
-		// set up the web socket
-		ws = new WebSocket(g_ws_url + "/ajax");
-		ws.OnConnected += ws_OnConnected;
-		ws.OnDisconnected += ws_OnDisconnected;
-		ws.OnDataReceived += ws_OnDataReceived;
-		// do some AJAxing at startup
-		jQueryAjaxOptions opts = new jQueryAjaxOptions { Url = "http://localhost:8888/data/form1.json", DataType = "json", Async = true };
-		// make the request
-		var req = jQuery.Ajax(opts);
-		// on success ...
-		req.Success(data => 
+		// load the default catalog (whatever that may be)
+		Window.SetTimeout(PostActivation,2000);
+	}
+
+	/// <summary>
+	/// Context menu handler for bases
+	/// </summary>
+	/// <param name="id"></param>
+	void ctx_base_filters_OnClick(string id)
+	{
+		NativeCode.Log("ctx_base_filters_OnClick " + id);
+		if (id == "cut")
 		{
-			json_layout = data;
-		});
+			base_filters.Cut();
+		}
+		else if (id == "selectAll")
+		{
+			base_filters.SelectAll();
+		}
+	}
+
+	/// <summary>
+	/// Context menu handler for main tree
+	/// </summary>
+	/// <param name="id"></param>
+	void ctx_tree_filters_OnClick(string id)
+	{
+		NativeCode.Log("ctx_tree_filters_OnClick " + id);
+		if (id == "cut")
+		{
+			tree_filters.Cut();
+		}
+		else if (id == "selectAll")
+		{
+			tree_filters.SelectAll();
+		}
+	}
+
+	/// <summary>
+	/// Timer callback in which we load default catalog
+	/// </summary>
+	private void PostActivation()
+	{
+		NativeCode.Log("PostActivation()");
+		// pop an AJAX request to get catalog
+		jQueryAjaxOptions opts = new jQueryAjaxOptions
+		{
+			Url = g_http_url + "/ajax",
+			DataType = "xml",
+			Async = true,
+			Success = OnCatalogSuccess,
+			Error = OnCatalogError,
+			Type = "GET"
+		};
+		var req = jQuery.Ajax(opts);
+	}
+
+	/// <summary>
+	/// Create the web socket. The Disconnection event will null the instance
+	/// </summary>
+	void CreateSocket()
+	{
+		if (ws == null)
+		{
+			ws = new WebSocket(g_ws_url + "/ajax");
+			ws.OnConnected += ws_OnConnected;
+			ws.OnDisconnected += ws_OnDisconnected;
+			ws.OnDataReceived += ws_OnDataReceived;
+		}
 	}
 
 	/// <summary>
@@ -498,12 +563,21 @@ public class main
 	{
  		NativeCode.Log("ws_OnDisconnected()");
 		status_bar.Text = String.Format("*No* connection to {0}", g_ws_url);
+		ws = null;
 	}
 
+	/// <summary>
+	/// Send any queued items ....
+	/// </summary>
 	void ws_OnConnected()
 	{
 		NativeCode.Log("ws_OnConnected()");
 		status_bar.Text = String.Format("Connected to {0}/ajax",g_ws_url);
+		for (int i = 0; i < _queue.Count; i++)
+		{
+			ws.Send(_queue[i]);
+		}
+		_queue.Clear();
 	}
 
 	/// <summary>
@@ -532,48 +606,77 @@ public class main
 		{
 			// serialize to raw JSON
 			StringBuilder sb = new StringBuilder();
-			sb.Append("[");
-			int count = tree_filters.GetRowCount();
-			for (int i = 0; i < count; i++)
-			{
-				//String sf = null;
-				//String st = null;
-				String rid = tree_filters.GetRowId(i);
-				String obj = tree_filters.GetRowData(rid, "type");
-				String pid = tree_filters.GetParentRowId(rid);
-				if (id != null && obj.Length > 0)
-				{
-					sb.Append("{\"rid\":");
-					sb.Append(QS(rid));
-					sb.Append(",\"pid\":");
-					sb.Append(QS(pid));
-					// verbatim text
-					DHTMLXGridCell cell = tree_filters.Cells(rid, FilterTree.eDescription);
-					sb.Append(",\"desc\":");
-					sb.Append(QS(cell.getValue()));
-					// filter(s)
-					cell = tree_filters.Cells(rid, FilterTree.eFilter);
-					sb.Append(",\"filter\":");
-					sb.Append(QS(cell.getValue()));
-					// target
-					cell = tree_filters.Cells(rid, FilterTree.eTarget);
-					sb.Append(",\"target\":");
-					sb.Append(QS(cell.getValue()));
-					sb.Append("}");
-					// gak ...
-					if (i < count - 1)
-					{
-						sb.Append(",");
-					}
-				}
-			}
+			sb.Append("{");
+			sb.Append(QS("Query"));
+			sb.Append(":");
+			sb.Append("{");
+			//
+			sb.Append(QS("filter_data"));
+			sb.Append(":[");
+			SerializeTree(tree_filters,ref sb);
+			sb.Append("],");
+			//
+			sb.Append(QS("base_data"));
+			sb.Append(":[");
+			SerializeTree(base_filters,ref sb);
 			sb.Append("]");
+			// close class scope Query
+			sb.Append("}");
+			// close header for Query
+			sb.Append("}");
 			//
 			//object json_object = jQuery.ParseJson(sb.ToString());
 			//SendJSONviaAJAX("tree", "json", sb.ToString());
-			if (ws != null)
+			if (ws == null)
+			{
+				CreateSocket();
+				_queue.Add(sb.ToString());
+			}
+			else
 			{
 				ws.Send(sb.ToString());
+			}
+		}
+	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="tree"></param>
+	/// <param name="sb"></param>
+	void SerializeTree(DHTMLXTreeGrid tree, ref StringBuilder sb)
+	{
+		int count = tree.GetRowCount();
+		for (int i = 0; i < count; i++)
+		{
+			//String sf = null;
+			//String st = null;
+			String rid = tree.GetRowId(i);
+			String obj = tree.GetRowData(rid, "type");
+			String pid = tree.GetParentRowId(rid);
+			{
+				sb.Append("{\"rid\":");
+				sb.Append(QS(rid));
+				sb.Append(",\"pid\":");
+				sb.Append(QS(pid));
+				// verbatim text
+				DHTMLXGridCell cell = tree.Cells(rid, FilterTree.eDescription);
+				sb.Append(",\"desc\":");
+				sb.Append(QS(cell.getValue()));
+				// filter(s)
+				cell = tree.Cells(rid, FilterTree.eFilter);
+				sb.Append(",\"filter\":");
+				sb.Append(QS(cell.getValue()));
+				// target
+				cell = tree.Cells(rid, FilterTree.eTarget);
+				sb.Append(",\"target\":");
+				sb.Append(QS(cell.getValue()));
+				sb.Append("}");
+				// gak ...
+				if (i < count - 1)
+				{
+					sb.Append(",");
+				}
 			}
 		}
 	}
@@ -605,35 +708,82 @@ public class main
 	/// <returns></returns>
 	private bool FilterTreeDragDropHandler(String[] srcIDs, String dstID, object srcWidget, object dstWidget, int srcColumn, int dstColumn)
 	{
-		if (srcWidget == dstWidget)
+		return DragDropCopyHandler(srcIDs,dstID,catalog,tree_filters,srcColumn,dstColumn);
+	}
+
+	private bool BaseTreeDragDropHandler(String[] srcIDs, String dstID, object srcWidget, object dstWidget, int srcColumn, int dstColumn)
+	{
+		return DragDropCopyHandler(srcIDs, dstID, catalog, base_filters, srcColumn, dstColumn);
+	}
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="srcIDs"></param>
+	/// <param name="dstID"></param>
+	/// <param name="srcWidget"></param>
+	/// <param name="dstWidget"></param>
+	/// <param name="srcColumn"></param>
+	/// <param name="dstColumn"></param>
+	/// <returns></returns>
+	private bool DragDropCopyHandler(String[] srcIDs, String dstID, DHTMLXTreeGrid srcWidget, DHTMLXTreeGrid dstWidget, int srcColumn, int dstColumn)
+	{
+		if (dstColumn == 2)
 		{
-			NativeCode.Log("Source == destination");
-		}	
-		else if (srcWidget == catalog.Instance &&
-			dstWidget == tree_filters.Instance)
-		{
-			if (dstColumn > 0)
+			String userdata = null;
+			DHTMLXGridCell dstCell = dstWidget.Cells(dstID, dstColumn);
+			if (dstCell != null)
 			{
-				DHTMLXGridCell dstCell = tree_filters.Cells(dstID, dstColumn);
-				if (dstCell != null)
+				String row_id = null;
+				//
+				for (int s = 0; s < srcIDs.Length; s++)
 				{
-					//
-					String dv = dstCell.getValue();
-					//
-					for (int s = 0; s < srcIDs.Length; s++)
+					row_id = srcIDs[s];
+					userdata = srcWidget.GetRowData(row_id,"type");
+					NativeCode.Log(userdata);
+					// filters are additive
+					if (userdata == "F")
 					{
-						DHTMLXGridCell srcCell = catalog.Cells(srcIDs[s], srcColumn);
+						DHTMLXGridCell srcCell = catalog.Cells(row_id, srcColumn);
+						//
+						String dv = dstCell.getValue();
+						if (dv.Length > 0)
+						{
+							dv += ",";
+						}
 						dv += srcCell.getValue();
-						dv += ",";
+						dstCell.setValue(dv);
 					}
-					//
-					dstCell.setValue(dv);
-					//
-					return false;
 				}
+				//
+				return false;
 			}
 		}
-		return !(srcWidget == dstWidget);
+		else if (dstColumn == 3)
+		{
+			String userdata = null;
+			DHTMLXGridCell dstCell = dstWidget.Cells(dstID, dstColumn);
+			if (dstCell != null)
+			{
+				String row_id = null;
+				//
+				for (int s = 0; s < srcIDs.Length; s++)
+				{
+					row_id = srcIDs[s];
+					userdata = srcWidget.GetRowData(row_id,"type");
+					NativeCode.Log(userdata);
+					// targets simply replace 
+					if (userdata == "T")
+					{
+						DHTMLXGridCell srcCell = catalog.Cells(row_id, srcColumn);
+						dstCell.setValue(srcCell.getValue());
+					}
+				}
+				// disallow any further drag/drop
+				return false;
+			}
+		}
+		return true;
 	}
 
 

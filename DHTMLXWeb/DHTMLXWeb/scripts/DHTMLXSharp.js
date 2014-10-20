@@ -311,6 +311,10 @@
 	var $DHTMLXSharp_$NativeCode = function() {
 	};
 	////////////////////////////////////////////////////////////////////////////////
+	// DHTMLXSharp.SingleshotTimer
+	var $DHTMLXSharp_$SingleshotTimer = function() {
+	};
+	////////////////////////////////////////////////////////////////////////////////
 	// DHTMLXSharp.Test
 	var $DHTMLXSharp_$Test = function(s) {
 		this.$_s = null;
@@ -416,7 +420,7 @@
 		this.$status_bar = null;
 		this.$tool_bar = null;
 		this.$ws = null;
-		this.$json_layout = null;
+		this.$_queue = [];
 	};
 	$DHTMLXSharp_main.prototype = {
 		onJSONSuccess: function(data, textStatus, request) {
@@ -429,6 +433,7 @@
 				//NativeCode.Log(xml);
 				this.$catalog.$_instance.clearAll();
 				this.$catalog.$_instance.parse(data, 'xml');
+				this.$status_bar.set_$text(ss.formatString('Loaded catalog from {0}{1}', $DHTMLXSharp_main.$g_http_url, '/ajax'));
 			}
 		},
 		onCatalogError: function(request, textStatus, error) {
@@ -539,23 +544,30 @@
 			cell = central_panel.$_instance.cells('a');
 			this.$base_filters = new $DHTMLXSharp_$DHTMLXTreeGrid.$ctor1(cell, 'data/filter_bases.xml');
 			this.$base_filters.$enableDragDrop();
+			// so we can pop-up in empty regions
+			this.$base_filters.$_instance.entBox.id = 'gridBody';
 			this.$base_filters.set_$multipleSelection(true);
-			this.$base_filters.add_$onDragDrop(ss.mkdel(this, this.$gridDragDropHandler));
+			this.$base_filters.add_$onDragDrop(ss.mkdel(this, this.$baseTreeDragDropHandler));
 			// base tree context menu
-			var menu = new $DHTMLXSharp_$DHTMLXContextMenu('data/imgs/');
-			menu.$_instance.loadStruct('data/context_edit_menu.xml');
-			this.$base_filters.$setContextMenu(menu);
+			var ctx_base_filters = new $DHTMLXSharp_$DHTMLXContextMenu('data/imgs/');
+			ctx_base_filters.$_instance.loadStruct('data/context_edit_menu.xml');
+			this.$base_filters.$setContextMenu(ctx_base_filters);
+			ctx_base_filters.$_instance.addContextZone('gridBody');
+			ctx_base_filters.$_instance.attachEvent('onClick', ss.mkdel(this, this.$ctx_base_filters_OnClick));
 			//---------------------------------------------------------------------------
 			// filter tree
 			cell = central_panel.$_instance.cells('c');
 			this.$tree_filters = new $DHTMLXSharp_$DHTMLXTreeGrid.$ctor1(cell, 'data/tree_filter.xml');
 			this.$tree_filters.$enableDragDrop();
+			this.$tree_filters.$_instance.entBox.id = 'gridBody';
 			this.$tree_filters.set_$multipleSelection(true);
 			this.$tree_filters.add_$onDragDrop(ss.mkdel(this, this.$filterTreeDragDropHandler));
 			// filter tree context menu
 			var ctx_tree_filters = new $DHTMLXSharp_$DHTMLXContextMenu('data/imgs/');
 			ctx_tree_filters.$_instance.loadStruct('data/context_edit_menu.xml');
 			this.$tree_filters.$setContextMenu(ctx_tree_filters);
+			ctx_tree_filters.$_instance.addContextZone('gridBody');
+			ctx_tree_filters.$_instance.attachEvent('onClick', ss.mkdel(this, this.$ctx_tree_filters_OnClick));
 			//---------------------------------------------------------------------------
 			// Right-hand panel contains catalog/results/charts
 			cell = central_panel.$_instance.cells('b');
@@ -572,7 +584,7 @@
 			this.$catalog.$enableDragDrop();
 			this.$catalog.set_$multipleSelection(true);
 			//---------------------------------------------------------------------------
-			// base tree context menu
+			// catalog context menu
 			var ctx_catalog = new $DHTMLXSharp_$DHTMLXContextMenu('data/imgs/');
 			ctx_catalog.$_instance.loadStruct('data/menu_ctx_catalog.xml');
 			this.$catalog.$setContextMenu(ctx_catalog);
@@ -594,19 +606,40 @@
 			this.$win.set_$text('Popup Window with embedded form');
 			this.$win.add_$onClick(ss.mkdel(this, this.$onButtonClicked));
 			//		win.ShowModal();
-			// set up the web socket
-			this.$ws = new $DHTMLXSharp_$WebSocket($DHTMLXSharp_main.$g_ws_url + '/ajax');
-			this.$ws.add_$onConnected(ss.mkdel(this, this.$ws_OnConnected));
-			this.$ws.add_$onDisconnected(ss.mkdel(this, this.$ws_OnDisconnected));
-			this.$ws.add_$onDataReceived(ss.mkdel(this, this.$ws_OnDataReceived));
-			// do some AJAxing at startup
-			var opts = { url: 'http://localhost:8888/data/form1.json', dataType: 'json', async: true };
-			// make the request
+			// load the default catalog (whatever that may be)
+			window.setTimeout(ss.mkdel(this, this.$postActivation), 2000);
+		},
+		$ctx_base_filters_OnClick: function(id) {
+			console.log('ctx_base_filters_OnClick ' + id);
+			if (id === 'cut') {
+				this.$base_filters.$_instance.deleteSelectedRows();
+			}
+			else if (id === 'selectAll') {
+				this.$base_filters.$_instance.selectAll();
+			}
+		},
+		$ctx_tree_filters_OnClick: function(id) {
+			console.log('ctx_tree_filters_OnClick ' + id);
+			if (id === 'cut') {
+				this.$tree_filters.$_instance.deleteSelectedRows();
+			}
+			else if (id === 'selectAll') {
+				this.$tree_filters.$_instance.selectAll();
+			}
+		},
+		$postActivation: function() {
+			console.log('PostActivation()');
+			// pop an AJAX request to get catalog
+			var opts = { url: $DHTMLXSharp_main.$g_http_url + '/ajax', dataType: 'xml', async: true, success: ss.mkdel(this, this.onCatalogSuccess), error: ss.mkdel(this, this.onCatalogError), type: 'GET' };
 			var req = $.ajax(opts);
-			// on success ...
-			req.success(ss.mkdel(this, function(data) {
-				this.$json_layout = data;
-			}));
+		},
+		$createSocket: function() {
+			if (ss.isNullOrUndefined(this.$ws)) {
+				this.$ws = new $DHTMLXSharp_$WebSocket($DHTMLXSharp_main.$g_ws_url + '/ajax');
+				this.$ws.add_$onConnected(ss.mkdel(this, this.$ws_OnConnected));
+				this.$ws.add_$onDisconnected(ss.mkdel(this, this.$ws_OnDisconnected));
+				this.$ws.add_$onDataReceived(ss.mkdel(this, this.$ws_OnDataReceived));
+			}
 		},
 		$ws_OnDataReceived: function(sender, data) {
 			if (ss.isValue(data)) {
@@ -617,10 +650,15 @@
 		$ws_OnDisconnected: function() {
 			console.log('ws_OnDisconnected()');
 			this.$status_bar.set_$text(ss.formatString('*No* connection to {0}', $DHTMLXSharp_main.$g_ws_url));
+			this.$ws = null;
 		},
 		$ws_OnConnected: function() {
 			console.log('ws_OnConnected()');
 			this.$status_bar.set_$text(ss.formatString('Connected to {0}/ajax', $DHTMLXSharp_main.$g_ws_url));
+			for (var i = 0; i < this.$_queue.length; i++) {
+				this.$ws.$_instance.send(this.$_queue[i]);
+			}
+			ss.clear(this.$_queue);
 		},
 		$QS: function(arg) {
 			var ret = '"';
@@ -634,45 +672,67 @@
 			console.log(ss.formatString('tool_bar_OnClick {0}', id));
 			if (id === 'save') {
 				// serialize to raw JSON
-				var sb = new ss.StringBuilder();
-				sb.append('[');
-				var count = this.$tree_filters.$getRowCount();
-				for (var i = 0; i < count; i++) {
-					//String sf = null;
-					//String st = null;
-					var rid = this.$tree_filters.$getRowId(i);
-					var obj = this.$tree_filters.$_instance.getUserData(rid, 'type');
-					var pid = this.$tree_filters.$getParentRowId(rid);
-					if (ss.isValue(id) && obj.length > 0) {
-						sb.append('{"rid":');
-						sb.append(this.$QS(rid));
-						sb.append(',"pid":');
-						sb.append(this.$QS(pid));
-						// verbatim text
-						var cell = this.$tree_filters.$_instance.cells(rid, $DHTMLXSharp_main$FilterTree.eDescription);
-						sb.append(',"desc":');
-						sb.append(this.$QS(cell.getValue({})));
-						// filter(s)
-						cell = this.$tree_filters.$_instance.cells(rid, $DHTMLXSharp_main$FilterTree.eFilter);
-						sb.append(',"filter":');
-						sb.append(this.$QS(cell.getValue({})));
-						// target
-						cell = this.$tree_filters.$_instance.cells(rid, $DHTMLXSharp_main$FilterTree.eTarget);
-						sb.append(',"target":');
-						sb.append(this.$QS(cell.getValue({})));
-						sb.append('}');
-						// gak ...
-						if (i < count - 1) {
-							sb.append(',');
-						}
-					}
-				}
-				sb.append(']');
+				var sb = { $: new ss.StringBuilder() };
+				sb.$.append('{');
+				sb.$.append(this.$QS('Query'));
+				sb.$.append(':');
+				sb.$.append('{');
+				//
+				sb.$.append(this.$QS('filter_data'));
+				sb.$.append(':[');
+				this.$serializeTree(this.$tree_filters, sb);
+				sb.$.append('],');
+				//
+				sb.$.append(this.$QS('base_data'));
+				sb.$.append(':[');
+				this.$serializeTree(this.$base_filters, sb);
+				sb.$.append(']');
+				// close class scope Query
+				sb.$.append('}');
+				// close header for Query
+				sb.$.append('}');
 				//
 				//object json_object = jQuery.ParseJson(sb.ToString());
 				//SendJSONviaAJAX("tree", "json", sb.ToString());
-				if (ss.isValue(this.$ws)) {
-					this.$ws.$_instance.send(sb.toString());
+				if (ss.isNullOrUndefined(this.$ws)) {
+					this.$createSocket();
+					ss.add(this.$_queue, sb.$.toString());
+				}
+				else {
+					this.$ws.$_instance.send(sb.$.toString());
+				}
+			}
+		},
+		$serializeTree: function(tree, sb) {
+			var count = tree.$getRowCount();
+			for (var i = 0; i < count; i++) {
+				//String sf = null;
+				//String st = null;
+				var rid = tree.$getRowId(i);
+				var obj = tree.$_instance.getUserData(rid, 'type');
+				var pid = tree.$getParentRowId(rid);
+				{
+					sb.$.append('{"rid":');
+					sb.$.append(this.$QS(rid));
+					sb.$.append(',"pid":');
+					sb.$.append(this.$QS(pid));
+					// verbatim text
+					var cell = tree.$_instance.cells(rid, $DHTMLXSharp_main$FilterTree.eDescription);
+					sb.$.append(',"desc":');
+					sb.$.append(this.$QS(cell.getValue({})));
+					// filter(s)
+					cell = tree.$_instance.cells(rid, $DHTMLXSharp_main$FilterTree.eFilter);
+					sb.$.append(',"filter":');
+					sb.$.append(this.$QS(cell.getValue({})));
+					// target
+					cell = tree.$_instance.cells(rid, $DHTMLXSharp_main$FilterTree.eTarget);
+					sb.$.append(',"target":');
+					sb.$.append(this.$QS(cell.getValue({})));
+					sb.$.append('}');
+					// gak ...
+					if (i < count - 1) {
+						sb.$.append(',');
+					}
 				}
 			}
 		},
@@ -680,29 +740,59 @@
 			return false;
 		},
 		$filterTreeDragDropHandler: function(srcIDs, dstID, srcWidget, dstWidget, srcColumn, dstColumn) {
-			if (ss.referenceEquals(srcWidget, dstWidget)) {
-				console.log('Source == destination');
-			}
-			else if (ss.referenceEquals(srcWidget, this.$catalog.get_$instance()) && ss.referenceEquals(dstWidget, this.$tree_filters.get_$instance())) {
-				if (dstColumn > 0) {
-					var dstCell = this.$tree_filters.$_instance.cells(dstID, dstColumn);
-					if (ss.isValue(dstCell)) {
-						//
-						var dv = dstCell.getValue({});
-						//
-						for (var s = 0; s < srcIDs.length; s++) {
-							var srcCell = this.$catalog.$_instance.cells(srcIDs[s], srcColumn);
+			return this.$dragDropCopyHandler(srcIDs, dstID, this.$catalog, this.$tree_filters, srcColumn, dstColumn);
+		},
+		$baseTreeDragDropHandler: function(srcIDs, dstID, srcWidget, dstWidget, srcColumn, dstColumn) {
+			return this.$dragDropCopyHandler(srcIDs, dstID, this.$catalog, this.$base_filters, srcColumn, dstColumn);
+		},
+		$dragDropCopyHandler: function(srcIDs, dstID, srcWidget, dstWidget, srcColumn, dstColumn) {
+			if (dstColumn === 2) {
+				var userdata = null;
+				var dstCell = dstWidget.$_instance.cells(dstID, dstColumn);
+				if (ss.isValue(dstCell)) {
+					var row_id = null;
+					//
+					for (var s = 0; s < srcIDs.length; s++) {
+						row_id = srcIDs[s];
+						userdata = srcWidget.$_instance.getUserData(row_id, 'type');
+						console.log(userdata);
+						// filters are additive
+						if (userdata === 'F') {
+							var srcCell = this.$catalog.$_instance.cells(row_id, srcColumn);
+							//
+							var dv = dstCell.getValue({});
+							if (dv.length > 0) {
+								dv += ',';
+							}
 							dv += srcCell.getValue({});
-							dv += ',';
+							dstCell.setValue(dv);
 						}
-						//
-						dstCell.setValue(dv);
-						//
-						return false;
 					}
+					//
+					return false;
 				}
 			}
-			return !ss.referenceEquals(srcWidget, dstWidget);
+			else if (dstColumn === 3) {
+				var userdata1 = null;
+				var dstCell1 = dstWidget.$_instance.cells(dstID, dstColumn);
+				if (ss.isValue(dstCell1)) {
+					var row_id1 = null;
+					//
+					for (var s1 = 0; s1 < srcIDs.length; s1++) {
+						row_id1 = srcIDs[s1];
+						userdata1 = srcWidget.$_instance.getUserData(row_id1, 'type');
+						console.log(userdata1);
+						// targets simply replace 
+						if (userdata1 === 'T') {
+							var srcCell1 = this.$catalog.$_instance.cells(row_id1, srcColumn);
+							dstCell1.setValue(srcCell1.getValue({}));
+						}
+					}
+					// disallow any further drag/drop
+					return false;
+				}
+			}
+			return true;
 		}
 	};
 	$DHTMLXSharp_main.$main = function() {
@@ -741,6 +831,7 @@
 	ss.registerClass(null, 'DHTMLXSharp.$DHTMLXWindow', $DHTMLXSharp_$DHTMLXWindow);
 	ss.registerClass(null, 'DHTMLXSharp.$DHTMLXWindowFactory', $DHTMLXSharp_$DHTMLXWindowFactory);
 	ss.registerClass(null, 'DHTMLXSharp.$NativeCode', $DHTMLXSharp_$NativeCode);
+	ss.registerClass(null, 'DHTMLXSharp.$SingleshotTimer', $DHTMLXSharp_$SingleshotTimer);
 	ss.registerClass(null, 'DHTMLXSharp.$Test', $DHTMLXSharp_$Test);
 	ss.registerClass(null, 'DHTMLXSharp.$WebSocket', $DHTMLXSharp_$WebSocket);
 	ss.registerClass(global, 'DHTMLXSharp.DHTMLXTreeGridSettings', $DHTMLXSharp_DHTMLXTreeGridSettings);

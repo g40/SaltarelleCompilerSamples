@@ -34,13 +34,14 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="ajax.cs" />
     <Compile Include="DHTMLX.cs">
       <SubType>Code</SubType>
     </Compile>
-    <None Include="MessageFlasher.cs" />
-    <None Include="MessageShower.cs" />
+    <Compile Include="DHTMLXContextMenu.cs" />
     <Compile Include="main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TreeGrid.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
